@@ -1,0 +1,2492 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Deri Takip</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f5f0eb;
+  --surface: #faf7f4;
+  --surface2: #ede8e2;
+  --border: #d8d0c6;
+  --accent: #8b4513;
+  --accent2: #c0722a;
+  --accent-light: #f0e4d4;
+  --text: #1a1410;
+  --text2: #7a6e65;
+  --danger: #c0392b;
+  --success: #27714a;
+  --warn: #c07c1a;
+  --blue: #1a5276;
+  --blue-light: #d6eaf8;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 14px; }
+
+header { background: var(--accent); padding: 12px 16px; position: sticky; top: 0; z-index: 50; }
+.header-inner { display: flex; align-items: center; justify-content: space-between; }
+.logo { font-family: 'Syne', sans-serif; font-size: 19px; font-weight: 800; color: #fff; }
+.logo span { color: #f5d9b8; font-size: 11px; display: block; font-weight: 600; }
+.header-date { font-family: 'DM Mono', monospace; font-size: 11px; color: #f5d9b8; text-align: right; }
+
+/* MAIN TABS */
+.main-tabs { display: flex; background: #6b340f; }
+.main-tabs button { flex: 1; padding: 11px 4px; background: none; border: none; border-bottom: 3px solid transparent; color: rgba(255,255,255,0.55); font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; text-transform: uppercase; cursor: pointer; letter-spacing: 0.3px; }
+.main-tabs button.active { color: #fff; border-bottom-color: #f5d9b8; background: rgba(255,255,255,0.07); }
+
+/* SUB TABS */
+.sub-tabs { display: flex; background: var(--surface); border-bottom: 1px solid var(--border); }
+.sub-tabs button { flex: 1; padding: 9px 4px; background: none; border: none; border-bottom: 2px solid transparent; color: var(--text2); font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 700; text-transform: uppercase; cursor: pointer; }
+.sub-tabs button.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+.page { display: none; padding: 16px; }
+.page.active { display: block; }
+
+.page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.page-title { font-family: 'Syne', sans-serif; font-size: 17px; font-weight: 800; color: var(--accent); }
+
+/* BUTTONS */
+.btn { display: inline-flex; align-items: center; gap: 5px; padding: 9px 14px; border-radius: 8px; border: none; font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700; cursor: pointer; transition: opacity 0.15s; }
+.btn:active { opacity: 0.8; }
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+.btn-success { background: var(--success); color: #fff; }
+.btn-warn { background: var(--warn); color: #fff; }
+.btn-blue { background: var(--blue); color: #fff; }
+.btn-danger { background: transparent; color: var(--danger); border: 1px solid var(--danger); }
+.btn-full { width: 100%; justify-content: center; margin-bottom: 8px; }
+.btn-sm { padding: 5px 9px; font-size: 11px; }
+
+/* CARDS */
+.item-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 10px; overflow: hidden; cursor: pointer; }
+.item-card-header { display: flex; align-items: flex-start; justify-content: space-between; padding: 11px 13px; border-bottom: 1px solid var(--border); }
+.item-code { font-family: 'DM Mono', monospace; font-size: 15px; color: var(--accent); }
+.item-sub { font-size: 11px; color: var(--text2); margin-top: 3px; }
+.item-body { padding: 11px 13px; }
+
+.status-badge { display: inline-block; padding: 3px 9px; border-radius: 20px; font-size: 10px; font-weight: 700; font-family: 'Syne', sans-serif; text-transform: uppercase; white-space: nowrap; }
+.s1 { background: #fdebd0; color: #c0722a; border: 1px solid #f0c090; }
+.s2 { background: #d5f5e3; color: #1e8449; border: 1px solid #a9dfbf; }
+.s3 { background: #d6eaf8; color: #1a5276; border: 1px solid #a9cce3; }
+.s-ret { background: #e8daef; color: #6c3483; border: 1px solid #c39bd3; }
+.s-bekliyor { background: #fdebd0; color: #c0722a; border: 1px solid #f0c090; }
+.s-tamam { background: #d5f5e3; color: #1e8449; border: 1px solid #a9dfbf; }
+
+.data-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+.data-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+.data-lbl { font-size: 10px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.4px; font-weight: 600; margin-bottom: 1px; }
+.data-val { font-family: 'DM Mono', monospace; font-size: 13px; }
+.data-val.big { font-size: 19px; color: var(--accent); }
+.data-val.pos { color: var(--success); }
+.data-val.neg { color: var(--danger); }
+
+/* FORM */
+.form-section { background: var(--accent-light); border: 1px solid #e0c8a8; border-radius: 10px; padding: 13px; margin-bottom: 11px; }
+.form-section.blue-sec { background: #eaf3fb; border-color: #a9cce3; }
+.fsec-title { font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--accent); margin-bottom: 10px; }
+.fsec-title.blue { color: var(--blue); }
+.form-group { margin-bottom: 9px; }
+.form-group:last-child { margin-bottom: 0; }
+label { display: block; font-size: 10px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 4px; }
+input, select { width: 100%; background: #fff; border: 1.5px solid var(--border); color: var(--text); padding: 9px 11px; border-radius: 7px; font-family: 'DM Sans', sans-serif; font-size: 15px; outline: none; -webkit-appearance: none; appearance: none; }
+input:focus, select:focus { border-color: var(--accent); }
+input[readonly] { background: var(--surface2); color: var(--accent); font-family: 'DM Mono', monospace; font-size: 13px; }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+
+/* MODAL */
+.modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(26,20,16,0.65); z-index: 1000; display: none; align-items: flex-end; justify-content: center; }
+.modal { background: var(--surface); border-radius: 20px 20px 0 0; border-top: 3px solid var(--accent); width: 100%; max-height: 92vh; overflow-y: auto; padding: 18px 16px 40px; }
+.modal.blue-modal { border-top-color: var(--blue); }
+.modal-handle { width: 38px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 14px; }
+.modal-title { font-family: 'Syne', sans-serif; font-size: 19px; font-weight: 800; color: var(--accent); margin-bottom: 14px; }
+.modal-title.blue { color: var(--blue); }
+
+/* SEARCH & FILTER */
+.search-wrap { position: relative; margin-bottom: 11px; }
+.search-wrap input { padding-left: 36px; background: var(--surface); }
+.s-icon { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); font-size: 15px; color: var(--text2); pointer-events: none; }
+.chips { display: flex; gap: 6px; margin-bottom: 11px; flex-wrap: wrap; }
+.chip { padding: 5px 11px; border-radius: 20px; border: 1.5px solid var(--border); background: var(--surface); color: var(--text2); font-size: 11px; font-weight: 600; cursor: pointer; font-family: 'Syne', sans-serif; }
+.chip.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.chip.blue-chip.active { background: var(--blue); border-color: var(--blue); }
+
+.empty { text-align: center; padding: 44px 20px; color: var(--text2); }
+.empty-icon { font-size: 44px; margin-bottom: 8px; }
+.empty-text { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; }
+
+.diff-box { display: flex; align-items: center; justify-content: space-around; padding: 12px; background: var(--surface2); border-radius: 10px; margin: 8px 0; text-align: center; }
+.diff-val { font-family: 'DM Mono', monospace; font-size: 24px; }
+
+.quality-row { display: grid; grid-template-columns: 75px 1fr 60px; gap: 7px; align-items: center; margin-bottom: 7px; }
+.q-lbl { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 11px; text-align: center; padding: 7px; border-radius: 6px; }
+.q-res { font-family: 'DM Mono', monospace; font-size: 12px; text-align: center; padding: 7px; background: var(--surface2); border-radius: 6px; color: var(--text2); }
+
+.divider { height: 1px; background: var(--border); margin: 11px 0; }
+.sup-tag { display: inline-block; background: var(--accent); color: #fff; font-family: 'DM Mono', monospace; font-size: 10px; padding: 2px 6px; border-radius: 4px; margin-right: 4px; }
+.excel-btn { background: #1d6f42; color: #fff; border: none; padding: 12px 16px; border-radius: 8px; font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; width: 100%; justify-content: center; margin-bottom: 8px; }
+.stat-box { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px; text-align: center; }
+
+.mek-opt {
+  padding: 12px 8px;
+  border-radius: 10px;
+  border: 2px solid var(--border);
+  background: var(--surface);
+  color: var(--text2);
+  font-family: 'Syne', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: center;
+  user-select: none;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.mek-evet  { background: #d5f5e3; border-color: #27714a; color: #27714a; }
+.mek-hayir { background: #fadbd8; border-color: #c0392b; color: #c0392b; }
+.mek-diger { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
+
+.list-input-wrap { position: relative; }
+.list-input-wrap input, .list-input-wrap select { width: 100%; }
+.add-btn { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); background: var(--accent); color: #fff; border: none; border-radius: 6px; padding: 4px 10px; font-size: 12px; font-family: Syne,sans-serif; font-weight: 700; cursor: pointer; }
+
+.photo-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px; }
+.photo-thumb { width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;border:1px solid var(--border);cursor:pointer; }
+.photo-add-btn { width:100%;aspect-ratio:1;border:2px dashed var(--border);border-radius:8px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:28px;cursor:pointer;color:var(--text2); }
+
+.toast { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%) translateY(80px); background: #1a1410; color: #fff; padding: 11px 18px; border-radius: 10px; font-size: 13px; font-weight: 600; z-index: 9999; transition: transform 0.3s; white-space: nowrap; pointer-events: none; }
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+.info-row { display: flex; align-items: center; gap: 8px; padding: 8px 11px; background: var(--surface2); border-radius: 8px; margin-bottom: 10px; font-size: 12px; color: var(--text2); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div>
+      <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:#fff;letter-spacing:2px;text-transform:uppercase;line-height:1">ASEN TANNERY</div>
+      <div style="font-family:'DM Sans',sans-serif;font-size:11px;color:#f5d9b8;font-weight:500;letter-spacing:1px;margin-top:2px">ÜRETİM TAKİP SİSTEMİ</div>
+    </div>
+    <div class="header-date" id="hDate"></div>
+  </div>
+</header>
+
+<div class="main-tabs">
+  <button class="active" onclick="showMain('sepi')">🐄 SEPİ</button>
+  <button onclick="showMain('retenaj')">🏭 RETENAJ</button>
+  <button onclick="showMain('stok')">📦 STOK</button>
+  <button onclick="showMain('rapor')">📊 RAPOR</button>
+</div>
+
+<!-- ════════════ SEPİ BÖLÜMÜ ════════════ -->
+<div id="main-sepi">
+  <div class="sub-tabs">
+    <button class="active" onclick="showSub('sepi','list')">📋 Kayıtlar</button>
+    <button onclick="showSub('sepi','export')">📤 Excel</button>
+  </div>
+
+  <div class="page active" id="sepi-list">
+    <div class="page-header">
+      <div class="page-title">Ham Deri / Sepi</div>
+      <button class="btn btn-primary" id="btnYeniSepi">+ Yeni Kart</button>
+    </div>
+    <div class="chips" id="sepi-chips">
+      <div class="chip active" onclick="sepiFilter('all',this)">Tümü</div>
+      <div class="chip" onclick="sepiFilter('1',this)">⏳ Girildi</div>
+      <div class="chip" onclick="sepiFilter('2',this)">🔵 Sepi Eklendi</div>
+      <div class="chip" onclick="sepiFilter('3',this)">✅ Tamam</div>
+    </div>
+    <div class="search-wrap">
+      <span class="s-icon">🔍</span>
+      <input type="text" id="sepiSearch" placeholder="Kod veya tedarikçi ara..." oninput="renderSepi()">
+    </div>
+    <div id="sepiList"></div>
+  </div>
+
+  <div class="page" id="sepi-export">
+    <div class="page-header"><div class="page-title">Excel Çıktısı</div></div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px">
+      <button class="excel-btn" onclick="exportSepi(null)">📊 Tüm Sepi Kayıtları</button>
+      <div class="divider"></div>
+      <div class="row2">
+        <div class="form-group"><label>Başlangıç</label><input type="date" id="sepiExpStart"></div>
+        <div class="form-group"><label>Bitiş</label><input type="date" id="sepiExpEnd"></div>
+      </div>
+      <button class="excel-btn" onclick="exportSepiFiltered()">📊 Filtrelenmiş İndir</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════ RETENAJ BÖLÜMÜ ════════════ -->
+<div id="main-retenaj" style="display:none">
+  <div class="sub-tabs">
+    <button class="active" onclick="showSub('retenaj','list')">📋 Kayıtlar</button>
+    <button onclick="showSub('retenaj','export')">📤 Excel</button>
+  </div>
+
+  <div class="page active" id="retenaj-list">
+    <div class="page-header">
+      <div class="page-title">Retenaj Takip</div>
+      <button class="btn btn-blue" id="btnYeniRet">+ Yeni Kart</button>
+    </div>
+    <div class="search-wrap">
+      <span class="s-icon">🔍</span>
+      <input type="text" id="retSearch" placeholder="İş emri veya müşteri ara..." oninput="renderRet()">
+    </div>
+    <div id="retList"></div>
+  </div>
+
+  <div class="page" id="retenaj-export">
+    <div class="page-header"><div class="page-title">Excel Çıktısı</div></div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px">
+      <button class="excel-btn" onclick="exportRet(null)">📊 Tüm Retenaj Kayıtları</button>
+      <div class="divider"></div>
+      <div class="row2">
+        <div class="form-group"><label>Başlangıç</label><input type="date" id="retExpStart"></div>
+        <div class="form-group"><label>Bitiş</label><input type="date" id="retExpEnd"></div>
+      </div>
+      <button class="excel-btn" onclick="exportRetFiltered()">📊 Filtrelenmiş İndir</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════ STOK BÖLÜMÜ ════════════ -->
+<div id="main-stok" style="display:none">
+  <div class="page active" id="stok-main" style="display:block">
+    <div class="page-header">
+      <div class="page-title">Deri Stok Durumu</div>
+      <button class="btn btn-secondary btn-sm" onclick="renderStok()">🔄 Yenile</button>
+    </div>
+    <div id="stokContent"></div>
+  </div>
+</div>
+
+<!-- ════════════ STOK BÖLÜMÜ ════════════ -->
+<div id="main-stok" style="display:none">
+  <div class="page active" id="stok-main" style="display:block">
+    <div class="page-header">
+      <div class="page-title">Deri Stok Durumu</div>
+      <button class="btn btn-secondary btn-sm" onclick="renderStok()">🔄 Yenile</button>
+    </div>
+    <div id="stokContent"></div>
+  </div>
+</div>
+
+<!-- ════════════ RAPOR BÖLÜMÜ ════════════ -->
+<div id="main-rapor" style="display:none">
+  <div class="sub-tabs">
+    <button class="active" onclick="showSub('rapor','genel')">📊 Genel</button>
+    <button onclick="showSub('rapor','yore')">📍 Yöre/Tedarikçi</button>
+    <button onclick="showSub('rapor','musteri')">👤 Müşteri</button>
+  </div>
+
+  <div class="page active" id="rapor-genel">
+    <div class="page-header"><div class="page-title">Genel Rapor</div></div>
+    <div id="raporContent"></div>
+  </div>
+
+  <div class="page" id="rapor-yore">
+    <div class="page-header"><div class="page-title">Yöre / Tedarikçi</div></div>
+    <div class="form-section" style="margin-bottom:12px">
+      <div class="fsec-title">🔍 Filtrele</div>
+      <div class="row2">
+        <div class="form-group">
+          <label>Yöre</label>
+          <select id="filter-yore" onchange="renderYoreRapor()">
+            <option value="">Tümü</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Cins</label>
+          <select id="filter-cins" onchange="renderYoreRapor()">
+            <option value="">Tümü</option>
+            <option>ERKEK</option>
+            <option>DANA</option>
+          </select>
+        </div>
+      </div>
+      <div class="row2">
+        <div class="form-group">
+          <label>Başlangıç Tarihi</label>
+          <input type="date" id="filter-start" onchange="renderYoreRapor()">
+        </div>
+        <div class="form-group">
+          <label>Bitiş Tarihi</label>
+          <input type="date" id="filter-end" onchange="renderYoreRapor()">
+        </div>
+      </div>
+    </div>
+    <div id="yoreRaporContent"></div>
+  </div>
+
+  <div class="page" id="rapor-musteri">
+    <div class="page-header"><div class="page-title">Müşteri Analizi</div></div>
+    <div class="form-section" style="margin-bottom:12px">
+      <div class="fsec-title">🔍 Filtrele</div>
+      <div class="form-group">
+        <label>Müşteri</label>
+        <select id="filter-musteri" onchange="renderMusteriRapor()">
+          <option value="">Tümü</option>
+        </select>
+      </div>
+      <div class="row2">
+        <div class="form-group">
+          <label>Başlangıç</label>
+          <input type="date" id="filter-ret-start" onchange="renderMusteriRapor()">
+        </div>
+        <div class="form-group">
+          <label>Bitiş</label>
+          <input type="date" id="filter-ret-end" onchange="renderMusteriRapor()">
+        </div>
+      </div>
+    </div>
+    <div id="musteriRaporContent"></div>
+  </div>
+</div>
+
+<!-- ══ SEPİ - EDİT MODAL ══ -->
+<div class="modal-overlay" id="modal-sepi-edit">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">✏️ Sepi Kartı Düzenle</div>
+
+    <div class="form-section">
+      <div class="fsec-title">🏭 Tedarikçi</div>
+      <div class="form-group">
+        <label>Tedarikçi Adı / Yöre</label>
+        <input type="text" id="se-sup" placeholder="Örn: Balıkesir">
+      </div>
+      <div class="row2">
+        <div class="form-group">
+          <label>Tedarikçi Kodu (1-9)</label>
+          <input type="number" id="se-code" min="1" max="9" placeholder="1-9">
+        </div>
+        <div class="form-group">
+          <label>Batch No</label>
+          <input type="text" id="se-batch" readonly style="background:var(--surface2);color:var(--accent);font-family:DM Mono,monospace;font-size:13px">
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="fsec-title">📦 Ham Deri</div>
+      <div class="form-group">
+        <label>Tarih</label>
+        <input type="date" id="se-date">
+      </div>
+      <div class="row2">
+        <div class="form-group">
+          <label>Ham Ağırlık (Kg)</label>
+          <input type="number" id="se-hamkg" placeholder="0" step="0.1">
+        </div>
+        <div class="form-group">
+          <label>Cins</label>
+          <select id="se-cins">
+            <option value="">Seç...</option>
+            <option>ERKEK</option><option>DANA</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Menşei</label>
+        <input type="text" id="se-mense" placeholder="Örn: Konya, Arjantin...">
+      </div>
+      <div class="form-group">
+        <label>Sepi Tipi</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div class="mek-opt" id="se-st-chrome" onclick="sepiEditTipSec('Chrome',this)">🔵 Chrome</div>
+          <div class="mek-opt" id="se-st-fullveg" onclick="sepiEditTipSec('Full-Veg',this)">🌿 Full-Veg</div>
+        </div>
+        <input type="hidden" id="se-sepitipi" value="">
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="fsec-title">🪨 Kireçlik Yarma <span style="font-weight:400;color:var(--text2);font-size:10px">— opsiyonel</span></div>
+      <div class="row2">
+        <div class="form-group">
+          <label>Kireçlik Kilo (Kg)</label>
+          <input type="number" id="se-kireckg" placeholder="0" step="0.1">
+        </div>
+        <div class="form-group">
+          <label>Kireçlik Kalınlık (mm)</label>
+          <input type="text" id="se-kireckalinlik" placeholder="Örn: 4-5">
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section" style="background:#e8f5ed;border-color:#a9dfbf" id="se-sepi-section">
+      <div class="fsec-title" style="color:var(--success)">🔵 Sepi Ağırlığı</div>
+      <div class="form-group">
+        <label>Sepi Kg</label>
+        <input type="number" id="se-sepikg" placeholder="0" step="0.1">
+      </div>
+    </div>
+
+    <div class="form-section" style="background:#eaf3fb;border-color:#a9cce3" id="se-kalite-section">
+      <div class="fsec-title" style="color:var(--blue)">⭐ Kalite Dağılımı</div>
+      <div class="quality-row">
+        <div class="q-lbl" style="background:#d5f5e3;color:#1e8449">1. KAL.</div>
+        <input type="number" id="se-q1" placeholder="Adet" min="0">
+        <div class="q-res" id="se-q1p">—</div>
+      </div>
+      <div class="quality-row">
+        <div class="q-lbl" style="background:#fef9c3;color:#b7950b">2. KAL.</div>
+        <input type="number" id="se-q2" placeholder="Adet" min="0">
+        <div class="q-res" id="se-q2p">—</div>
+      </div>
+      <div class="quality-row">
+        <div class="q-lbl" style="background:#fadbd8;color:#c0392b">3. KAL.</div>
+        <input type="number" id="se-q3" placeholder="Adet" min="0">
+        <div class="q-res" id="se-q3p">—</div>
+      </div>
+      <div id="se-avg-preview"></div>
+    </div>
+
+    <button class="btn btn-primary btn-full" onclick="saveSepiEdit()">💾 Değişiklikleri Kaydet</button>
+    <button class="btn btn-secondary btn-full" onclick="cm('modal-sepi-edit')">İptal</button>
+  </div>
+</div>
+
+<!-- ══ SEPİ - YENİ KART MODAL ══ -->
+<div class="modal-overlay" id="modal-sepi-new">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">🐄 Yeni Ham Deri Kartı</div>
+    <div class="form-section">
+      <div class="fsec-title">🏭 Tedarikçi</div>
+      <div class="form-group">
+        <label>Tedarikçi</label>
+        <div style="display:flex;gap:8px">
+          <select id="sn-sup-select" style="flex:1" onchange="onTedarikciSelect()">
+            <option value="">-- Tedarikçi Seçin --</option>
+          </select>
+          <button class="btn btn-primary btn-sm" onclick="showAddTedarikci()" type="button">+</button>
+        </div>
+        <div id="sn-sup-new" style="display:none;margin-top:6px;background:var(--accent-light);padding:10px;border-radius:8px">
+          <div class="fsec-title" style="margin-bottom:8px">Yeni Tedarikçi Ekle</div>
+          <div class="row2" style="margin-bottom:8px">
+            <div class="form-group">
+              <label>Kod (0-9)</label>
+              <input type="number" id="sn-new-code" min="0" max="9" placeholder="0-9">
+            </div>
+            <div class="form-group">
+              <label>Ad / Yöre</label>
+              <input type="text" id="sn-new-name" placeholder="Örn: Balıkesir">
+            </div>
+          </div>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-primary btn-sm" onclick="saveNewTedarikci()" type="button">💾 Kaydet</button>
+            <button class="btn btn-secondary btn-sm" onclick="hideAddTedarikci()" type="button">İptal</button>
+          </div>
+        </div>
+      </div>
+      <div id="sn-sample-wrap" style="display:none" class="form-group">
+        <label>Sample Açıklaması</label>
+        <input type="text" id="sn-sample-aciklama" placeholder="Örn: Adana, İzmir...">
+      </div>
+      <div class="row2">
+        <div class="form-group">
+          <label>Tedarikçi Kodu</label>
+          <input type="text" id="sn-code" readonly style="background:var(--surface2);color:var(--accent);font-family:DM Mono,monospace">
+        </div>
+        <div class="form-group">
+          <label>Batch No (Otomatik)</label>
+          <input type="text" id="sn-batch" readonly>
+        </div>
+      </div>
+      <input type="hidden" id="sn-sup" value="">
+    </div>
+    <div class="form-section">
+      <div class="fsec-title">📦 Ham Deri</div>
+      <div class="form-group">
+        <label>Tarih</label>
+        <input type="date" id="sn-date">
+      </div>
+      <div class="row2">
+        <div class="form-group">
+          <label>Ham Ağırlık (Kg)</label>
+          <input type="number" id="sn-hamkg" placeholder="0" step="0.1">
+        </div>
+        <div class="form-group">
+          <label>Cins</label>
+          <select id="sn-cins">
+            <option value="">Seç...</option>
+            <option>ERKEK</option><option>DANA</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Menşei</label>
+        <input type="text" id="sn-mense" placeholder="Örn: Konya, Arjantin...">
+      </div>
+      <div class="form-group">
+        <label>Sepi Tipi</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div class="mek-opt" id="st-chrome" onclick="sepiTipSec('Chrome',this)">🔵 Chrome</div>
+          <div class="mek-opt" id="st-fullveg" onclick="sepiTipSec('Full-Veg',this)">🌿 Full-Veg</div>
+        </div>
+        <input type="hidden" id="sn-sepitipi" value="">
+      </div>
+    </div>
+    <div class="form-section">
+      <div class="fsec-title">🪨 Kireçlik Yarma <span style="font-weight:400;color:var(--text2);font-size:10px">— opsiyonel</span></div>
+      <div class="row2">
+        <div class="form-group">
+          <label>Kireçlik Kilo (Kg)</label>
+          <input type="number" id="sn-kireckg" placeholder="0" step="0.1">
+        </div>
+        <div class="form-group">
+          <label>Kireçlik Kalınlık (mm)</label>
+          <input type="text" id="sn-kireckalinlik" placeholder="Örn: 4-5">
+        </div>
+      </div>
+    </div>
+    <button class="btn btn-primary btn-full" onclick="saveSepiCard()">💾 Kartı Oluştur</button>
+    <button class="btn btn-secondary btn-full" onclick="cm('modal-sepi-new')">İptal</button>
+  </div>
+</div>
+
+<!-- ══ SEPİ - SEPİ KG MODAL ══ -->
+<div class="modal-overlay" id="modal-sepi-kg">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="sk-title">🔵 Sepi Ağırlığı</div>
+    <div id="sk-info"></div>
+    <div class="form-section">
+      <div class="fsec-title">⚖️ Sepi Tartımı</div>
+      <div class="form-group">
+        <label>Sepi Ağırlığı (Kg)</label>
+        <input type="number" id="sk-kg" placeholder="0" step="0.1" oninput="calcDiff()">
+      </div>
+      <div id="sk-diff"></div>
+    </div>
+    <button class="btn btn-success btn-full" onclick="saveSepiKg()">💾 Sepi Kaydını Ekle</button>
+    <button class="btn btn-secondary btn-full" onclick="cm('modal-sepi-kg')">İptal</button>
+  </div>
+</div>
+
+<!-- ══ SEPİ - KALİTE MODAL ══ -->
+<div class="modal-overlay" id="modal-sepi-qual">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">⭐ Kalite Dağılımı</div>
+    <div id="sq-info"></div>
+    <div class="form-section">
+      <div class="fsec-title">📊 Kalite & Adet</div>
+      <div class="quality-row">
+        <div class="q-lbl" style="background:#d5f5e3;color:#1e8449">1. KAL.</div>
+        <input type="number" id="sq1" placeholder="Adet" min="0" oninput="calcAvg()">
+        <div class="q-res" id="sq1p">—</div>
+      </div>
+      <div class="quality-row">
+        <div class="q-lbl" style="background:#fef9c3;color:#b7950b">2. KAL.</div>
+        <input type="number" id="sq2" placeholder="Adet" min="0" oninput="calcAvg()">
+        <div class="q-res" id="sq2p">—</div>
+      </div>
+      <div class="quality-row">
+        <div class="q-lbl" style="background:#fadbd8;color:#c0392b">3. KAL.</div>
+        <input type="number" id="sq3" placeholder="Adet" min="0" oninput="calcAvg()">
+        <div class="q-res" id="sq3p">—</div>
+      </div>
+      <div class="divider"></div>
+      <div id="sq-avg"></div>
+    </div>
+    <button class="btn btn-primary btn-full" onclick="saveSepiQual()">💾 Kalite Kaydını Ekle</button>
+    <button class="btn btn-secondary btn-full" onclick="cm('modal-sepi-qual')">İptal</button>
+  </div>
+</div>
+
+<!-- ══ SEPİ - DETAY MODAL ══ -->
+<div class="modal-overlay" id="modal-sepi-detail">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div id="sd-content"></div>
+    <button class="btn btn-secondary btn-full" onclick="cm('modal-sepi-detail')">Kapat</button>
+  </div>
+</div>
+
+<!-- ══ RETENAJ - YENİ KART MODAL ══ -->
+<div class="modal-overlay" id="modal-ret-new">
+  <div class="modal blue-modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title blue">🏭 Yeni Retenaj Kartı</div>
+    <div class="form-section blue-sec">
+      <div class="fsec-title blue">📋 İş Emri</div>
+      <div class="form-group">
+        <label>İş Emri No (Otomatik)</label>
+        <input type="text" id="rn-isemri" readonly>
+      </div>
+    </div>
+    <div class="form-section">
+      <div class="fsec-title">👤 Müşteri & Ürün</div>
+      <div class="form-group">
+        <label>Müşteri Firma Adı</label>
+        <div class="list-input-wrap">
+          <select id="rn-musteri" style="padding-right:40px">
+            <option value="">-- Seçin veya yeni ekleyin --</option>
+          </select>
+          <button class="add-btn" onclick="showAddNew('musteri')" type="button">+</button>
+        </div>
+        <div id="rn-musteri-new" style="display:none;margin-top:6px">
+          <div style="display:flex;gap:6px">
+            <input type="text" id="rn-musteri-text" placeholder="Yeni müşteri adı..." style="flex:1">
+            <button class="btn btn-primary btn-sm" onclick="addNewItem('musteri')" type="button">Kaydet</button>
+            <button class="btn btn-secondary btn-sm" onclick="hideAddNew('musteri')" type="button">İptal</button>
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Ürün / Makale Adı</label>
+        <div class="list-input-wrap">
+          <select id="rn-urun" style="padding-right:40px">
+            <option value="">-- Seçin veya yeni ekleyin --</option>
+          </select>
+          <button class="add-btn" onclick="showAddNew('urun')" type="button">+</button>
+        </div>
+        <div id="rn-urun-new" style="display:none;margin-top:6px">
+          <div style="display:flex;gap:6px">
+            <input type="text" id="rn-urun-text" placeholder="Yeni ürün adı..." style="flex:1">
+            <button class="btn btn-primary btn-sm" onclick="addNewItem('urun')" type="button">Kaydet</button>
+            <button class="btn btn-secondary btn-sm" onclick="hideAddNew('urun')" type="button">İptal</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="form-section">
+      <div class="fsec-title">🎨 Üretim Detayları</div>
+      <div class="form-group">
+        <label>Üretim Tarihi</label>
+        <input type="date" id="rn-tarih">
+      </div>
+      <div class="row2">
+        <div class="form-group">
+          <label>Renk</label>
+          <input type="text" id="rn-renk" placeholder="Renk...">
+        </div>
+        <div class="form-group">
+          <label>Adet</label>
+          <input type="number" id="rn-adet" placeholder="0" min="0">
+        </div>
+      </div>
+      <div class="row2">
+        <div class="form-group">
+          <label>Kalınlık (mm)</label>
+          <input type="text" id="rn-kalinlik" placeholder="Örn: 1.2-1.4">
+        </div>
+        <div class="form-group">
+          <label>Kalite</label>
+          <select id="rn-kalite">
+            <option value="">Seç...</option>
+            <option>I</option><option>II</option><option>III</option>
+            <option>I-II</option><option>I-II-III</option><option>II-III</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Dolap No</label>
+        <select id="rn-dolap">
+          <option value="">Seç...</option>
+          <option>Dolap 3</option>
+          <option>Dolap 4</option>
+          <option>Uni-1</option>
+          <option>Uni-2</option>
+          <option>B Deneme</option>
+          <option>K Deneme</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Toplam Kg</label>
+        <input type="number" id="rn-kg" placeholder="0" step="0.1">
+      </div>
+    </div>
+    <div class="form-section blue-sec">
+      <div class="fsec-title blue">🔗 Sepi Kaynağı</div>
+      <div class="form-group">
+        <label>Kaynak Türü</label>
+        <select id="rn-kaynak-tur" onchange="updateKaynakForm()">
+          <option value="uygulama">📱 Uygulamadaki Sepi</option>
+          <option value="eski">📦 Eski Stok</option>
+          <option value="wb">🔵 Dışarıdan WB</option>
+        </select>
+      </div>
+
+      <!-- Uygulamadaki Sepi -->
+      <div id="kaynak-uygulama">
+        <div class="form-group">
+          <label>Sepi Batch Kodu</label>
+          <select id="rn-sepi-select" onchange="fillSepiInfo()">
+            <option value="">-- Sepi Kodu Seçin --</option>
+          </select>
+        </div>
+        <div id="rn-sepi-info"></div>
+      </div>
+
+      <!-- Eski Stok -->
+      <div id="kaynak-eski" style="display:none">
+        <div class="form-group">
+          <label>Batch / Lot Kodu</label>
+          <input type="text" id="eski-batch" placeholder="Eski batch kodu...">
+        </div>
+        <div class="row2">
+          <div class="form-group">
+            <label>Yöre / Menşei</label>
+            <input type="text" id="eski-mense" placeholder="Örn: Konya">
+          </div>
+          <div class="form-group">
+            <label>Cins</label>
+            <select id="eski-cins">
+              <option value="">Seç...</option>
+              <option>ERKEK</option><option>DANA</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Tedarikçi</label>
+          <input type="text" id="eski-supplier" placeholder="Tedarikçi adı...">
+        </div>
+      </div>
+
+      <!-- Dışarıdan WB -->
+      <div id="kaynak-wb" style="display:none">
+        <div class="form-group">
+          <label>WB Tedarikçi</label>
+          <input type="text" id="wb-supplier" placeholder="Tedarikçi adı...">
+        </div>
+        <div class="row2">
+          <div class="form-group">
+            <label>Yöre / Menşei</label>
+            <input type="text" id="wb-mense" placeholder="Örn: Arjantin">
+          </div>
+          <div class="form-group">
+            <label>Cins</label>
+            <select id="wb-cins">
+              <option value="">Seç...</option>
+              <option>ERKEK</option><option>DANA</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>WB Batch / Lot No</label>
+          <input type="text" id="wb-batch" placeholder="WB lot kodu...">
+        </div>
+      </div>
+
+    </div>
+    <div class="form-section">
+      <div class="fsec-title">⚙️ Mekanik İşlemler</div>
+
+      <div class="form-group">
+        <label>Açkı / Sıkma</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div class="mek-opt" onclick="mekSec('acki','Evet',this)">✅ Evet</div>
+          <div class="mek-opt" onclick="mekSec('acki','Hayır',this)">❌ Hayır</div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Çivi</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+          <div class="mek-opt" onclick="mekSec('civi','Yapıldı',this)">🔨 Yapıldı</div>
+          <div class="mek-opt" onclick="mekSec('civi','Yapılmadı',this)">➖ Yapılmadı</div>
+          <div class="mek-opt" onclick="mekSec('civi','Sökecek',this)">🔧 Sökecek</div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Vakum</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+          <div class="mek-opt" onclick="mekSec('vakum','Evet',this)">💨 Evet</div>
+          <div class="mek-opt" onclick="mekSec('vakum','Hayır',this)">❌ Hayır</div>
+        </div>
+        <div class="row2">
+          <div class="form-group">
+            <label>Derece (°C)</label>
+            <input type="number" id="vakum-derece" placeholder="Örn: 60">
+          </div>
+          <div class="form-group">
+            <label>Süre (dk)</label>
+            <input type="number" id="vakum-sure" placeholder="Örn: 10">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn btn-blue btn-full" onclick="saveRetCard()">💾 Kartı Oluştur</button>
+    <button class="btn btn-secondary btn-full" onclick="cm('modal-ret-new')">İptal</button>
+  </div>
+</div>
+
+<!-- ══ RETENAJ - EDİT MODAL ══ -->
+<div class="modal-overlay" id="modal-ret-edit">
+  <div class="modal blue-modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title blue">✏️ Retenaj Düzenle</div>
+    <div class="form-section blue-sec">
+      <div class="fsec-title blue">📋 İş Emri</div>
+      <div class="form-group">
+        <label>İş Emri No</label>
+        <input type="text" id="re-isemri" readonly style="background:var(--surface2);color:var(--accent);font-family:DM Mono,monospace">
+      </div>
+    </div>
+    <div class="form-section">
+      <div class="fsec-title">👤 Müşteri & Ürün</div>
+      <div class="form-group">
+        <label>Müşteri Firma Adı</label>
+        <select id="re-musteri">
+          <option value="">-- Seçin --</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Ürün / Makale Adı</label>
+        <select id="re-urun">
+          <option value="">-- Seçin --</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-section">
+      <div class="fsec-title">🎨 Üretim Detayları</div>
+      <div class="form-group">
+        <label>Üretim Tarihi</label>
+        <input type="date" id="re-tarih">
+      </div>
+      <div class="row2">
+        <div class="form-group">
+          <label>Renk</label>
+          <input type="text" id="re-renk" placeholder="Renk...">
+        </div>
+        <div class="form-group">
+          <label>Adet</label>
+          <input type="number" id="re-adet" placeholder="0" min="0">
+        </div>
+      </div>
+      <div class="row2">
+        <div class="form-group">
+          <label>Toplam Kg</label>
+          <input type="number" id="re-kg" placeholder="0" step="0.1">
+        </div>
+        <div class="form-group">
+          <label>Kalınlık (mm)</label>
+          <input type="text" id="re-kalinlik" placeholder="Örn: 1.2-1.4">
+        </div>
+      </div>
+      <div class="row2">
+        <div class="form-group">
+          <label>Kalite</label>
+          <select id="re-kalite">
+            <option value="">Seç...</option>
+            <option>I</option><option>II</option><option>III</option>
+            <option>I-II</option><option>I-II-III</option><option>II-III</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Dolap No</label>
+          <select id="re-dolap">
+            <option value="">Seç...</option>
+            <option>Dolap 3</option><option>Dolap 4</option>
+            <option>Uni-1</option><option>Uni-2</option>
+            <option>B Deneme</option><option>K Deneme</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <button class="btn btn-blue btn-full" onclick="saveRetEdit()">💾 Değişiklikleri Kaydet</button>
+    <button class="btn btn-secondary btn-full" onclick="cm('modal-ret-edit')">İptal</button>
+  </div>
+</div>
+
+<!-- ══ FİNİSAJ MODAL ══ -->
+<div class="modal-overlay" id="modal-finisaj">
+  <div class="modal blue-modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title blue">🎨 Finisaj Bilgileri</div>
+    <div id="fin-kart-bilgi"></div>
+    <div class="form-section">
+      <div class="fsec-title">📝 Finisaj</div>
+      <div class="form-group">
+        <label>Finisaj Tarihi</label>
+        <input type="date" id="fin-tarih">
+      </div>
+      <div class="form-group">
+        <label>Yapılan İşlemler</label>
+        <textarea id="fin-not" rows="6" style="width:100%;background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:10px 12px;font-family:DM Sans,sans-serif;font-size:14px;outline:none;resize:vertical;color:var(--text)" placeholder="Finisaj sürecinde yapılan işlemleri yazın..."></textarea>
+      </div>
+    </div>
+    <button class="btn btn-success btn-full" onclick="saveFinisaj()">💾 Finisajı Kaydet</button>
+    <button class="btn btn-secondary btn-full" onclick="cm('modal-finisaj')">İptal</button>
+  </div>
+</div>
+
+<!-- ══ RETENAJ - DETAY MODAL ══ -->
+<div class="modal-overlay" id="modal-ret-detail">
+  <div class="modal blue-modal">
+    <div class="modal-handle"></div>
+    <div id="rd-content"></div>
+    <button class="btn btn-secondary btn-full" onclick="cm('modal-ret-detail')">Kapat</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<input type="file" id="photoInput" accept="image/*" style="display:none" onchange="handlePhotoSelected(this)">
+
+
+<!-- LOADING OVERLAY -->
+<div id="loadingOverlay" style="display:none;position:fixed;inset:0;background:rgba(26,20,16,0.7);z-index:9000;align-items:center;justify-content:center;flex-direction:column;gap:12px">
+  <div style="width:44px;height:44px;border:4px solid rgba(255,255,255,0.2);border-top-color:#f5d9b8;border-radius:50%;animation:spin 0.8s linear infinite"></div>
+  <div id="loadingMsg" style="color:#fff;font-family:Syne,sans-serif;font-size:14px;font-weight:700"></div>
+</div>
+<style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+// ═══ CONFIG ═══════════════════════════════════════════
+var API_URL = 'https://script.google.com/macros/s/AKfycbxJDl7DXrIbzr18FjXvv76mBHAnmQ-XQ3jPl44SZneCSKLrHBBoadHIMJ0Wd3wl0Os/exec';
+
+// ═══ STATE ════════════════════════════════════════════
+var sepiCards = [];
+var retCards  = [];
+var editId    = null;
+var sepiFilterVal = 'all';
+var isLoading = false;
+
+function genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2,5); }
+
+// ═══ API HELPERS ══════════════════════════════════════
+async function apiGet(sheet) {
+  const res = await fetch(API_URL + '?action=getAll&sheet=' + sheet);
+  const json = await res.json();
+  return json.ok ? json.data : [];
+}
+async function apiPost(action, sheet, data) {
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    body: JSON.stringify({ action, sheet, data })
+  });
+  return await res.json();
+}
+
+async function saveSepi() {
+  // Tüm sepi verisini sheets'e yaz
+  await apiPost('saveAll', 'SEPİ', sepiCards);
+}
+async function saveRet() {
+  await apiPost('saveAll', 'RETENAJ', retCards);
+}
+
+// ═══ LOADING ══════════════════════════════════════════
+function showLoading(msg) {
+  document.getElementById('loadingOverlay').style.display = 'flex';
+  document.getElementById('loadingMsg').textContent = msg || 'Yükleniyor...';
+}
+function hideLoading() {
+  document.getElementById('loadingOverlay').style.display = 'none';
+}
+
+// ═══ CLOCK ═══════════════════════════════════════════
+function updateClock() {
+  var d = new Date();
+  document.getElementById('hDate').innerHTML =
+    d.toLocaleDateString('tr-TR',{weekday:'short',day:'numeric',month:'long'})+'<br>'+
+    d.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});
+}
+updateClock(); setInterval(updateClock,30000);
+
+// ═══ DATE HELPERS ════════════════════════════════════
+function todayStr() {
+  var d=new Date(), m=String(d.getMonth()+1).padStart(2,'0'), dd=String(d.getDate()).padStart(2,'0');
+  return d.getFullYear()+'-'+m+'-'+dd;
+}
+function fmtDate(s) {
+  if (!s) return '—';
+  try {
+    // ISO format veya normal format ikisini de handle et
+    var d = new Date(s);
+    if (!isNaN(d.getTime()) && s.toString().indexOf('T') > -1) {
+      // ISO string - 2026-03-17T21:00:00.000Z gibi
+      var day = String(d.getUTCDate()).padStart(2,'0');
+      var mon = String(d.getUTCMonth()+1).padStart(2,'0');
+      var yr  = d.getUTCFullYear();
+      return day+'.'+mon+'.'+yr;
+    }
+    // Normal YYYY-MM-DD format
+    var p = s.toString().split('-');
+    if (p.length >= 3) return p[2].substring(0,2)+'.'+p[1]+'.'+p[0];
+  } catch(e) {}
+  return s;
+}
+
+// ═══ BATCH CODE ═══════════════════════════════════════
+function genBatch(code, dateStr) {
+  if (!code||!dateStr) return '';
+  var p=dateStr.split('-');
+  return code+'-'+p[2]+'-'+p[1]+'-'+p[0].slice(-1);
+}
+function updateBatch() {
+  var c=document.getElementById('sn-code').value;
+  var d=document.getElementById('sn-date').value||todayStr();
+  document.getElementById('sn-batch').value = c ? genBatch(c,d) : '';
+}
+
+// ═══ İŞ EMRİ NO ═══════════════════════════════════════
+function genIsEmri() {
+  // Format: 532-XXX  devam ettiriyoruz, ya da mevcut en yüksek + 1
+  if (retCards.length === 0) return '532-001';
+  var nums = retCards.map(function(r){
+    var parts = r.isEmri.split('-');
+    return parseInt(parts[parts.length-1]) || 0;
+  });
+  var maxNum = Math.max.apply(null, nums);
+  return '532-' + String(maxNum+1).padStart(3,'0');
+}
+
+// ═══ NAVIGATION ════════════════════════════════════════
+var currentMain = 'sepi';
+function showMain(m) {
+  currentMain = m;
+  ['sepi','retenaj','stok','rapor'].forEach(function(x){
+    document.getElementById('main-'+x).style.display = x===m ? 'block' : 'none';
+  });
+  document.querySelectorAll('.main-tabs button').forEach(function(b,i){
+    b.classList.toggle('active', ['sepi','retenaj','stok','rapor'][i]===m);
+  });
+  if (m==='sepi') renderSepi();
+  if (m==='retenaj') renderRet();
+  if (m==='stok') renderStok();
+  if (m==='rapor') renderRapor();
+}
+
+// showSub updated below
+
+// ═══ MODAL HELPERS ════════════════════════════════════
+function om(id) { document.getElementById(id).style.display='flex'; }
+function cm(id) { document.getElementById(id).style.display='none'; }
+document.addEventListener('click', function(e){
+  var ids=['modal-sepi-new','modal-sepi-kg','modal-sepi-qual','modal-sepi-detail','modal-ret-new','modal-ret-detail','modal-finisaj','modal-ret-edit','modal-sepi-edit'];
+  ids.forEach(function(id){ if(e.target===document.getElementById(id)) cm(id); });
+});
+
+// ═══ TOAST ════════════════════════════════════════════
+function toast(msg) {
+  var t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); },2800);
+}
+
+// ══════════════════════════════════════════════════════
+// SEPİ BÖLÜMÜ
+// ══════════════════════════════════════════════════════
+
+function sepiFilter(f, el) {
+  sepiFilterVal=f;
+  document.querySelectorAll('#sepi-chips .chip').forEach(function(c){ c.classList.remove('active'); });
+  el.classList.add('active');
+  renderSepi();
+}
+
+function renderSepi() {
+  var q=(document.getElementById('sepiSearch').value||'').toLowerCase();
+  var list=sepiCards.slice().sort(function(a,b){ return new Date(b.createdAt)-new Date(a.createdAt); });
+  if (sepiFilterVal!=='all') list=list.filter(function(c){ return String(c.status)===sepiFilterVal; });
+  if (q) list=list.filter(function(c){
+    return (c.batchNo||'').toLowerCase().includes(q)||(c.supplierName||'').toLowerCase().includes(q)||(c.mense||'').toLowerCase().includes(q)||(c.sepiTipi||'').toLowerCase().includes(q)||(c.cins||'').toLowerCase().includes(q);
+  });
+  var el=document.getElementById('sepiList');
+  if (!list.length) { el.innerHTML='<div class="empty"><div class="empty-icon">🐄</div><div class="empty-text">Kayıt bulunamadı</div></div>'; return; }
+  var slabels={1:'⏳ Ham Deri Girildi',2:'🔵 Sepi Eklendi',3:'✅ Tamamlandı'};
+  var sclass={1:'s1',2:'s2',3:'s3'};
+  el.innerHTML=list.map(function(c){
+    var diff=c.sepiKg&&c.hamKg ? c.sepiKg-c.hamKg : null;
+    var diffStr=diff!==null?'<span style="color:'+(diff>=0?'var(--success)':'var(--danger)')+';">'+(diff>=0?'+':'')+diff.toFixed(1)+' kg</span>':'';
+    var actionBtn='';
+    if(c.status===1) actionBtn='<button class="btn btn-warn btn-sm" onclick="event.stopPropagation();openSepiKg(\''+c.id+'\')">⚖️ Sepi Gir</button>';
+    if(c.status===2) actionBtn='<button class="btn btn-primary btn-sm" onclick="event.stopPropagation();openSepiQual(\''+c.id+'\')">⭐ Kalite Gir</button>';
+    return '<div class="item-card" onclick="openSepiDetail(\''+c.id+'\')">'+
+      '<div class="item-card-header">'+
+        '<div><div class="item-code">'+c.batchNo+'</div>'+
+        '<div class="item-sub"><span class="sup-tag">'+c.supplierCode+'</span>'+c.supplierName+(c.mense?' · '+c.mense:'')+'</div></div>'+
+        '<span class="status-badge '+sclass[c.status]+'">'+slabels[c.status]+'</span>'+
+      '</div>'+
+      '<div class="item-body">'+
+        '<div class="data-grid">'+
+          '<div><div class="data-lbl">Ham Kg</div><div class="data-val big">'+( c.hamKg||'—')+'</div></div>'+
+          '<div><div class="data-lbl">Sepi Kg '+diffStr+'</div><div class="data-val big" style="'+(c.sepiKg?'':'color:var(--text2)')+'">'+( c.sepiKg||'—')+'</div></div>'+
+          '<div><div class="data-lbl">Cins</div><div class="data-val">'+( c.cins||'—')+'</div></div>'+
+          '<div><div class="data-lbl">Tarih</div><div class="data-val">'+fmtDate(c.date)+'</div></div>'+
+          '<div><div class="data-lbl">Sepi Tipi</div><div class="data-val">'+(c.sepiTipi||'—')+'</div></div>'+
+        '</div>'+
+        (c.status<3?'<div>'+actionBtn+'</div>':'')+
+      '</div></div>';
+  }).join('');
+}
+
+// Yeni Sepi Kartı
+document.getElementById('btnYeniSepi').onclick = function() {
+  document.getElementById('sn-sup').value='';
+  document.getElementById('sn-sup-select').value='';
+  document.getElementById('sn-code').value='';
+  document.getElementById('sn-batch').value='';
+  document.getElementById('sn-sample-wrap').style.display='none';
+  document.getElementById('sn-sample-aciklama').value='';
+  hideAddTedarikci();
+  document.getElementById('sn-code').value='';
+  document.getElementById('sn-batch').value='';
+  document.getElementById('sn-date').value=todayStr();
+  document.getElementById('sn-hamkg').value='';
+  document.getElementById('sn-cins').value='';
+  document.getElementById('sn-mense').value='';
+  document.getElementById('sn-sepitipi').value='';
+  document.getElementById('sn-kireckg').value='';
+  document.getElementById('sn-kireckalinlik').value='';
+  document.querySelectorAll('#st-chrome,#st-fullveg').forEach(function(b){b.classList.remove('mek-evet','mek-diger');});
+  om('modal-sepi-new');
+};
+document.getElementById('sn-code').oninput=updateBatch;
+document.getElementById('sn-date').onchange=updateBatch;
+
+async function saveSepiCard() {
+  var name=document.getElementById('sn-sup').value.trim();
+  // Sample ise açıklamayı ekle
+  var sampleAciklama = document.getElementById('sn-sample-aciklama') ? document.getElementById('sn-sample-aciklama').value.trim() : '';
+  if (document.getElementById('sn-code').value == '0' && sampleAciklama) {
+    name = 'Sample-' + sampleAciklama;
+  }
+  var code=document.getElementById('sn-code').value;
+  var date=document.getElementById('sn-date').value;
+  var hamKg=parseFloat(document.getElementById('sn-hamkg').value);
+  var cins=document.getElementById('sn-cins').value;
+  var mense=document.getElementById('sn-mense').value.trim();
+  var sepiTipi=document.getElementById('sn-sepitipi').value;
+  var kirecKg=parseFloat(document.getElementById('sn-kireckg').value)||0;
+  var kirecKalinlik=document.getElementById('sn-kireckalinlik').value.trim();
+  if(!name){toast('⚠️ Tedarikçi adı zorunlu!');return;}
+  if(!code){toast('⚠️ Tedarikçi seçiniz!');return;}
+  if(!date){toast('⚠️ Tarih zorunlu!');return;}
+  if(!hamKg||hamKg<=0){toast('⚠️ Ham ağırlık zorunlu!');return;}
+  if(!cins){toast('⚠️ Cins seçiniz!');return;}
+  var card={id:genId(),batchNo:genBatch(code,date),supplierCode:code,supplierName:name,mense:mense,date:date,hamKg:hamKg,cins:cins,sepiTipi:sepiTipi,kirecKg:kirecKg,kirecKalinlik:kirecKalinlik,sepiKg:null,q1:null,q2:null,q3:null,status:1,createdAt:new Date().toISOString()};
+  sepiCards.push(card);
+  showLoading('Kaydediliyor...');
+  await saveSepi();
+  hideLoading();
+  cm('modal-sepi-new'); renderSepi();
+  toast('✅ Kart oluşturuldu: '+card.batchNo);
+}
+
+// Sepi Kg
+function openSepiKg(id) {
+  editId=id;
+  var c=sepiCards.find(function(x){return x.id===id;});
+  document.getElementById('sk-title').textContent='🔵 Sepi — '+c.batchNo;
+  document.getElementById('sk-info').innerHTML='<div class="data-grid"><div><div class="data-lbl">Tedarikçi</div><div class="data-val">'+c.supplierName+'</div></div><div><div class="data-lbl">Ham Kg</div><div class="data-val big">'+c.hamKg+'</div></div></div>';
+  document.getElementById('sk-kg').value='';
+  document.getElementById('sk-diff').innerHTML='';
+  om('modal-sepi-kg');
+}
+function calcDiff() {
+  var c=sepiCards.find(function(x){return x.id===editId;});
+  var v=parseFloat(document.getElementById('sk-kg').value);
+  if(!v||!c){document.getElementById('sk-diff').innerHTML='';return;}
+  var diff=v-c.hamKg, pct=(diff/c.hamKg*100).toFixed(1);
+  var col=diff>=0?'var(--success)':'var(--danger)';
+  document.getElementById('sk-diff').innerHTML=
+    '<div class="diff-box">'+
+      '<div><div class="data-lbl">Ham</div><div class="diff-val" style="color:var(--text2)">'+c.hamKg+'</div><div style="font-size:10px;color:var(--text2)">kg</div></div>'+
+      '<div style="font-size:18px">→</div>'+
+      '<div><div class="data-lbl">Sepi</div><div class="diff-val" style="color:var(--accent)">'+v+'</div><div style="font-size:10px;color:var(--text2)">kg</div></div>'+
+      '<div style="font-size:18px">→</div>'+
+      '<div><div class="data-lbl">Fark</div><div class="diff-val" style="color:'+col+'">'+(diff>=0?'+':'')+diff.toFixed(1)+'</div><div style="font-size:10px;color:'+col+'">'+(diff>=0?'📈':'📉')+' '+pct+'%</div></div>'+
+    '</div>';
+}
+async function saveSepiKg() {
+  var v=parseFloat(document.getElementById('sk-kg').value);
+  if(!v||v<=0){toast('⚠️ Sepi ağırlığı giriniz!');return;}
+  var idx=sepiCards.findIndex(function(x){return x.id===editId;});
+  sepiCards[idx].sepiKg=v; sepiCards[idx].status=2;
+  showLoading('Kaydediliyor...');
+  await saveSepi();
+  hideLoading();
+  cm('modal-sepi-kg'); renderSepi();
+  toast('✅ Sepi ağırlığı kaydedildi!');
+}
+
+// Kalite
+function openSepiQual(id) {
+  editId=id;
+  var c=sepiCards.find(function(x){return x.id===id;});
+  document.getElementById('sq-info').innerHTML='<div class="info-row">📦 <strong>'+c.batchNo+'</strong> · Ham: '+c.hamKg+' kg</div>';
+  document.getElementById('sq1').value=''; document.getElementById('sq2').value=''; document.getElementById('sq3').value='';
+  document.getElementById('sq1p').textContent='—'; document.getElementById('sq2p').textContent='—'; document.getElementById('sq3p').textContent='—';
+  document.getElementById('sq-avg').innerHTML='';
+  om('modal-sepi-qual');
+}
+function calcAvg() {
+  var c=sepiCards.find(function(x){return x.id===editId;});
+  var q1=parseInt(document.getElementById('sq1').value)||0;
+  var q2=parseInt(document.getElementById('sq2').value)||0;
+  var q3=parseInt(document.getElementById('sq3').value)||0;
+  var tot=q1+q2+q3;
+  if(tot>0){
+    document.getElementById('sq1p').textContent=((q1/tot)*100).toFixed(0)+'%';
+    document.getElementById('sq2p').textContent=((q2/tot)*100).toFixed(0)+'%';
+    document.getElementById('sq3p').textContent=((q3/tot)*100).toFixed(0)+'%';
+    var avg=c?(c.hamKg/tot).toFixed(2):'—';
+    document.getElementById('sq-avg').innerHTML='<div class="data-grid"><div style="text-align:center"><div class="data-lbl">Toplam Adet</div><div class="data-val big">'+tot+'</div></div><div style="text-align:center"><div class="data-lbl">Ort. kg/adet</div><div class="data-val big">'+avg+'</div></div></div>';
+  } else {
+    ['sq1p','sq2p','sq3p'].forEach(function(id){document.getElementById(id).textContent='—';});
+    document.getElementById('sq-avg').innerHTML='';
+  }
+}
+async function saveSepiQual() {
+  var q1=parseInt(document.getElementById('sq1').value)||0;
+  var q2=parseInt(document.getElementById('sq2').value)||0;
+  var q3=parseInt(document.getElementById('sq3').value)||0;
+  if(q1+q2+q3===0){toast('⚠️ En az bir kalite adedi giriniz!');return;}
+  var idx=sepiCards.findIndex(function(x){return x.id===editId;});
+  sepiCards[idx].q1=q1; sepiCards[idx].q2=q2; sepiCards[idx].q3=q3;
+  sepiCards[idx].totalAdet=q1+q2+q3;
+  sepiCards[idx].avgKg=parseFloat((sepiCards[idx].hamKg/(q1+q2+q3)).toFixed(2));
+  sepiCards[idx].status=3;
+  showLoading('Kaydediliyor...');
+  await saveSepi();
+  hideLoading();
+  cm('modal-sepi-qual'); renderSepi();
+  toast('✅ Kalite bilgileri kaydedildi!');
+}
+
+// Sepi Detay
+function openSepiDetail(id) {
+  var c=sepiCards.find(function(x){return x.id===id;});
+  var diff=c.sepiKg?c.sepiKg-c.hamKg:null;
+  var dc=diff!==null?(diff>=0?'var(--success)':'var(--danger)'):'';
+  var pct=diff!==null?((diff/c.hamKg)*100).toFixed(1):null;
+  var html='<div style="margin-bottom:14px"><div class="item-code" style="font-size:20px">'+c.batchNo+'</div>'+
+    '<div class="item-sub" style="margin-top:4px"><span class="sup-tag">'+c.supplierCode+'</span>'+c.supplierName+'</div></div>'+
+    '<div class="form-section"><div class="fsec-title">📦 Ham Deri</div>'+
+    '<div class="data-grid">'+
+      '<div><div class="data-lbl">Tarih</div><div class="data-val">'+fmtDate(c.date)+'</div></div>'+
+      '<div><div class="data-lbl">Ham Kg</div><div class="data-val big">'+c.hamKg+'</div></div>'+
+      '<div><div class="data-lbl">Cins</div><div class="data-val">'+( c.cins||'—')+'</div></div>'+
+      '<div><div class="data-lbl">Menşei</div><div class="data-val">'+( c.mense||'—')+'</div></div>'+
+    '</div></div>';
+  if(c.sepiKg){
+    html+='<div class="form-section" style="background:#e8f5ed;border-color:#a9dfbf"><div class="fsec-title" style="color:var(--success)">🔵 Sepi</div>'+
+      '<div class="data-grid">'+
+        '<div><div class="data-lbl">Sepi Kg</div><div class="data-val big">'+c.sepiKg+'</div></div>'+
+        '<div><div class="data-lbl">Fark</div><div class="data-val big" style="color:'+dc+'">'+(diff>=0?'+':'')+diff.toFixed(1)+' kg</div></div>'+
+      '</div>'+
+      '<div style="text-align:center;font-size:12px;color:'+dc+';font-weight:600;padding:4px">'+(diff>=0?'📈':'📉')+' Verim: '+(diff>=0?'+':'')+pct+'%</div></div>';
+  } else {
+    html+='<div style="text-align:center;padding:12px;color:var(--text2);font-size:13px;border:1px dashed var(--border);border-radius:8px;margin-bottom:11px">🔵 Sepi henüz girilmedi<br><button class="btn btn-warn btn-sm" style="margin-top:8px" onclick="cm(\'modal-sepi-detail\');openSepiKg(\''+c.id+'\')">Sepi Gir</button></div>';
+  }
+  if(c.q1!==null){
+    var tot=c.totalAdet;
+    html+='<div class="form-section" style="background:#eaf3fb;border-color:#a9cce3"><div class="fsec-title" style="color:var(--blue)">⭐ Kalite</div>'+
+      '<div class="row3">'+
+        '<div style="text-align:center;padding:8px;background:#d5f5e3;border-radius:8px"><div class="data-lbl" style="color:#1e8449">1.Kal.</div><div style="font-family:DM Mono,monospace;font-size:20px;color:#1e8449">'+c.q1+'</div><div style="font-size:10px;color:#1e8449">'+((c.q1/tot)*100).toFixed(0)+'%</div></div>'+
+        '<div style="text-align:center;padding:8px;background:#fef9c3;border-radius:8px"><div class="data-lbl" style="color:#b7950b">2.Kal.</div><div style="font-family:DM Mono,monospace;font-size:20px;color:#b7950b">'+c.q2+'</div><div style="font-size:10px;color:#b7950b">'+((c.q2/tot)*100).toFixed(0)+'%</div></div>'+
+        '<div style="text-align:center;padding:8px;background:#fadbd8;border-radius:8px"><div class="data-lbl" style="color:#c0392b">3.Kal.</div><div style="font-family:DM Mono,monospace;font-size:20px;color:#c0392b">'+c.q3+'</div><div style="font-size:10px;color:#c0392b">'+((c.q3/tot)*100).toFixed(0)+'%</div></div>'+
+      '</div>'+
+      '<div class="data-grid" style="margin-top:10px;margin-bottom:0">'+
+        '<div style="text-align:center"><div class="data-lbl">Toplam</div><div class="data-val big">'+tot+'</div></div>'+
+        '<div style="text-align:center"><div class="data-lbl">Ort. kg/adet</div><div class="data-val big">'+c.avgKg+'</div></div>'+
+      '</div></div>';
+  } else if(c.status===2){
+    html+='<div style="text-align:center;padding:12px;color:var(--text2);font-size:13px;border:1px dashed var(--border);border-radius:8px;margin-bottom:11px">⭐ Kalite henüz girilmedi<br><button class="btn btn-primary btn-sm" style="margin-top:8px" onclick="cm(\'modal-sepi-detail\');openSepiQual(\''+c.id+'\')">Kalite Gir</button></div>';
+  }
+  html+='<div class="divider"></div>';
+  html+='<button class="btn btn-warn btn-sm btn-full" style="margin-bottom:8px" onclick="openSepiEdit(\''+c.id+'\')">✏️ Düzenle</button>';
+  html+='<button class="btn btn-danger btn-sm btn-full" onclick="deleteSepi(\''+c.id+'\')">🗑️ Kartı Sil</button>';
+  var sPhotos=[];
+  try{sPhotos=c.photos?(typeof c.photos==='string'?JSON.parse(c.photos||'[]'):(Array.isArray(c.photos)?c.photos:[])):[];}catch(e){}
+  html+='<div class="form-section" style="background:#f5f0eb"><div class="fsec-title">📷 Fotoğraflar</div><div class="photo-grid">';
+  sPhotos.forEach(function(p){
+    html+='<div style="position:relative">';
+    html+='<img class="photo-thumb" src="https://drive.google.com/thumbnail?id='+p.id+'&sz=w200" onclick="window.open(\''+p.url+'\')">'; 
+    html+='<div onclick="deletePhoto(\'sepi\',\''+c.id+'\',\''+p.id+'\')" style="position:absolute;top:3px;right:3px;background:rgba(192,57,43,0.85);color:#fff;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer">✕</div>';
+    html+='</div>';
+  });
+  html+='<div class="photo-add-btn" onclick="openPhotoCapture(\'sepi\',\''+c.id+'\')">+</div></div></div>';
+  document.getElementById('sd-content').innerHTML=html;
+  om('modal-sepi-detail');
+}
+// deleteSepi moved to window.deleteSepi at bottom
+
+// ══════════════════════════════════════════════════════
+// RETENAJ BÖLÜMÜ
+// ══════════════════════════════════════════════════════
+
+function renderRet() {
+  var q=(document.getElementById('retSearch').value||'').toLowerCase();
+  var list=retCards.slice().sort(function(a,b){return new Date(b.createdAt)-new Date(a.createdAt);});
+  if(q) list=list.filter(function(c){
+    return (c.isEmri||'').toLowerCase().includes(q)||(c.musteri||'').toLowerCase().includes(q)||(c.urun||'').toLowerCase().includes(q);
+  });
+  var el=document.getElementById('retList');
+  if(!list.length){el.innerHTML='<div class="empty"><div class="empty-icon">🏭</div><div class="empty-text">Kayıt bulunamadı</div></div>';return;}
+  el.innerHTML=list.map(function(c){
+    return '<div class="item-card" onclick="openRetDetail(\''+c.id+'\')">'+
+      '<div class="item-card-header">'+
+        '<div><div class="item-code" style="color:var(--blue)">'+c.isEmri+'</div>'+
+        '<div class="item-sub">'+c.musteri+' · '+c.urun+'</div></div>'+
+        '<span class="status-badge s-ret">'+fmtDate(c.tarih)+'</span>'+
+      '</div>'+
+      '<div class="item-body">'+
+        '<div class="data-grid">'+
+          '<div><div class="data-lbl">Kaynak</div><div class="data-val">'+(c.kaynakTur==='wb'?'🔵 Dışarıdan WB':c.kaynakTur==='eski'?'📦 Eski Stok':'📱 Uygulama Sepi')+'</div></div>'+
+          '<div><div class="data-lbl">Kaynak</div><div class="data-val">'+(c.kaynakTur==='wb'?'🔵 Dışarıdan WB':c.kaynakTur==='eski'?'📦 Eski Stok':'📱 Uygulama Sepi')+'</div></div>'+
+          '<div><div class="data-lbl">Renk</div><div class="data-val">'+( c.renk||'—')+'</div></div>'+
+          '<div><div class="data-lbl">Adet</div><div class="data-val big" style="color:var(--blue)">'+( c.adet||'—')+'</div></div>'+
+          '<div><div class="data-lbl">Toplam Kg</div><div class="data-val big">'+( c.kg||'—')+'</div></div>'+
+          '<div><div class="data-lbl">Kalınlık</div><div class="data-val">'+( c.kalinlik||'—')+' mm</div></div>'+
+          '<div><div class="data-lbl">Kalite</div><div class="data-val">'+( c.kalite||'—')+'</div></div>'+
+          '<div><div class="data-lbl">Dolap No</div><div class="data-val">'+( c.dolap||'—')+'</div></div>'+
+          '<div><div class="data-lbl">Dolap No</div><div class="data-val">'+( c.dolap||'—')+'</div></div>'+
+        '</div>'+
+        (c.sepiBatch?'<div class="info-row" style="font-size:11px">🔗 Sepi: <strong>'+c.sepiBatch+'</strong>'+(c.sepiMense?' · '+c.sepiMense:'')+(c.sepiCins?' · '+c.sepiCins:'')+'</div>':'')+
+      '</div></div>';
+  }).join('');
+}
+
+document.getElementById('btnYeniRet').onclick = function() {
+  document.getElementById('rn-isemri').value = genIsEmri();
+  document.getElementById('rn-musteri').value='';
+  document.getElementById('rn-urun').value='';
+  document.getElementById('rn-tarih').value=todayStr();
+  document.getElementById('rn-renk').value='';
+  document.getElementById('rn-adet').value='';
+  document.getElementById('rn-kalinlik').value='';
+  document.getElementById('rn-kalite').value='';
+  document.getElementById('rn-kg').value='';
+  document.getElementById('rn-dolap').value='';
+  document.getElementById('rn-sepi-info').innerHTML='';
+  document.getElementById('rn-kaynak-tur').value='uygulama';
+  resetMekanik();
+  fillDropdown('rn-musteri', _musteriler);
+  fillDropdown('rn-urun', _urunler);
+  hideAddNew('musteri');
+  hideAddNew('urun');
+  document.getElementById('kaynak-uygulama').style.display='block';
+  document.getElementById('kaynak-eski').style.display='none';
+  document.getElementById('kaynak-wb').style.display='none';
+  // Sepi listesini doldur
+  var sel=document.getElementById('rn-sepi-select');
+  sel.innerHTML='<option value="">-- Sepi Kodu Seçin --</option>';
+  sepiCards.filter(function(c){return c.batchNo;}).forEach(function(c){
+    var opt=document.createElement('option');
+    opt.value=c.id;
+    opt.textContent=c.batchNo+' — '+c.supplierName+(c.mense?' ('+c.mense+')':'');
+    sel.appendChild(opt);
+  });
+  om('modal-ret-new');
+};
+
+function updateKaynakForm() {
+  var tur = document.getElementById('rn-kaynak-tur').value;
+  document.getElementById('kaynak-uygulama').style.display = tur==='uygulama' ? 'block' : 'none';
+  document.getElementById('kaynak-eski').style.display = tur==='eski' ? 'block' : 'none';
+  document.getElementById('kaynak-wb').style.display = tur==='wb' ? 'block' : 'none';
+}
+
+function fillSepiInfo() {
+  var id=document.getElementById('rn-sepi-select').value;
+  if(!id){document.getElementById('rn-sepi-info').innerHTML='';return;}
+  var c=sepiCards.find(function(x){return x.id===id;});
+  if(!c){return;}
+  document.getElementById('rn-sepi-info').innerHTML=
+    '<div class="info-row" style="flex-wrap:wrap;gap:6px">'+
+      '<span>🔗 <strong>'+c.batchNo+'</strong></span>'+
+      (c.mense?'<span>📍 '+c.mense+'</span>':'')+
+      (c.cins?'<span>🐄 '+c.cins+'</span>':'')+
+      (c.supplierName?'<span>🏭 '+c.supplierName+'</span>':'')+
+    '</div>';
+}
+
+async function saveRetCard() {
+  var isEmri=document.getElementById('rn-isemri').value;
+  var musteri=document.getElementById('rn-musteri').value;
+  var urun=document.getElementById('rn-urun').value;
+  var tarih=document.getElementById('rn-tarih').value;
+  var renk=document.getElementById('rn-renk').value.trim();
+  var adet=parseInt(document.getElementById('rn-adet').value)||0;
+  var kalinlik=document.getElementById('rn-kalinlik').value.trim();
+  var kalite=document.getElementById('rn-kalite').value;
+  var dolap=document.getElementById('rn-dolap').value;
+  var kg=parseFloat(document.getElementById('rn-kg').value)||0;
+  var mek = getMekanikData();
+  var kaynakTur = document.getElementById('rn-kaynak-tur') ? document.getElementById('rn-kaynak-tur').value : 'uygulama';
+  var sepiId = '', sepiBatch = '', sepiMense = '', sepiCins = '', sepiSupplier = '';
+
+  if (kaynakTur === 'uygulama') {
+    sepiId = document.getElementById('rn-sepi-select').value;
+    var sepiCard = sepiId ? sepiCards.find(function(x){ return x.id===sepiId; }) : null;
+    if (sepiCard) {
+      sepiBatch    = sepiCard.batchNo || '';
+      sepiMense    = sepiCard.mense || '';
+      sepiCins     = sepiCard.cins || '';
+      sepiSupplier = sepiCard.supplierName || '';
+    }
+  } else if (kaynakTur === 'eski') {
+    sepiBatch    = document.getElementById('eski-batch').value.trim();
+    sepiMense    = document.getElementById('eski-mense').value.trim();
+    sepiCins     = document.getElementById('eski-cins').value;
+    sepiSupplier = document.getElementById('eski-supplier').value.trim();
+  } else if (kaynakTur === 'wb') {
+    sepiSupplier = document.getElementById('wb-supplier').value.trim();
+    sepiMense    = document.getElementById('wb-mense').value.trim();
+    sepiCins     = document.getElementById('wb-cins').value;
+    sepiBatch    = document.getElementById('wb-batch').value.trim();
+  }
+
+  if(!musteri){toast('⚠️ Müşteri adı zorunlu!');return;}
+  if(!urun){toast('⚠️ Ürün adı zorunlu!');return;}
+  if(!tarih){toast('⚠️ Tarih zorunlu!');return;}
+
+  var card={
+    id:genId(),
+    isEmri:isEmri,
+    musteri:musteri,
+    urun:urun,
+    tarih:tarih,
+    renk:renk,
+    adet:adet,
+    kalinlik:kalinlik,
+    kalite:kalite,
+    dolap:dolap,
+    kg:kg,
+    kaynakTur:kaynakTur,
+    sepiId:sepiId||null,
+    sepiBatch:sepiBatch,
+    sepiMense:sepiMense,
+    sepiCins:sepiCins,
+    sepiSupplier:sepiSupplier,
+    acki:mek.acki,
+    civi:mek.civi,
+    vakum:mek.vakum,
+    vakumDerece:mek.vakumDerece,
+    vakumSure:mek.vakumSure,
+    createdAt:new Date().toISOString()
+  };
+  retCards.push(card);
+  showLoading('Kaydediliyor...');
+  await saveRet();
+  hideLoading();
+  cm('modal-ret-new'); renderRet();
+  toast('✅ Retenaj kartı oluşturuldu: '+isEmri);
+}
+
+function openRetDetail(id) {
+  var c=retCards.find(function(x){return x.id===id;});
+  var html='<div style="margin-bottom:14px">'+
+    '<div class="item-code" style="font-size:20px;color:var(--blue)">'+c.isEmri+'</div>'+
+    '<div class="item-sub" style="margin-top:3px;font-size:13px">'+c.musteri+' · <strong>'+c.urun+'</strong></div></div>'+
+    '<div class="form-section blue-sec"><div class="fsec-title blue">🎨 Üretim Bilgileri</div>'+
+    '<div class="data-grid">'+
+      '<div><div class="data-lbl">Tarih</div><div class="data-val">'+fmtDate(c.tarih)+'</div></div>'+
+      '<div><div class="data-lbl">Adet</div><div class="data-val big" style="color:var(--blue)">'+( c.adet||'—')+'</div></div>'+
+      '<div><div class="data-lbl">Kaynak</div><div class="data-val">'+(c.kaynakTur==='wb'?'🔵 Dışarıdan WB':c.kaynakTur==='eski'?'📦 Eski Stok':'📱 Uygulama Sepi')+'</div></div>'+
+          '<div><div class="data-lbl">Renk</div><div class="data-val">'+( c.renk||'—')+'</div></div>'+
+      '<div><div class="data-lbl">Kalınlık</div><div class="data-val">'+( c.kalinlik||'—')+' mm</div></div>'+
+      '<div><div class="data-lbl">Kalite</div><div class="data-val">'+( c.kalite||'—')+'</div></div>'+
+    '</div></div>';
+  // Sepi - her zaman göster
+  var kaynakBaslik = c.kaynakTur==='wb' ? '🔵 Dışarıdan WB' : c.kaynakTur==='eski' ? '📦 Eski Stok' : '📱 Uygulama Sepi';
+  html+='<div class="form-section"><div class="fsec-title">🔗 Sepi Kaynağı — '+kaynakBaslik+'</div>'+
+    '<div class="data-grid">'+
+      (c.sepiBatch?'<div><div class="data-lbl">Batch No</div><div class="data-val" style="font-family:DM Mono,monospace;color:var(--accent)">'+c.sepiBatch+'</div></div>':'')+
+      (c.sepiSupplier?'<div><div class="data-lbl">Tedarikçi</div><div class="data-val">'+c.sepiSupplier+'</div></div>':'')+
+      (c.sepiMense?'<div><div class="data-lbl">Menşei</div><div class="data-val">'+c.sepiMense+'</div></div>':'')+
+      (c.sepiCins?'<div><div class="data-lbl">Cins</div><div class="data-val">'+c.sepiCins+'</div></div>':'')+
+    '</div></div>';
+  // Mekanik - varsa göster
+  if(c.acki||c.civi||c.vakum){
+    html+='<div class="form-section" style="background:#f5f0eb"><div class="fsec-title">⚙️ Mekanik İşlemler</div>'+
+      '<div class="data-grid">'+
+        (c.acki?'<div><div class="data-lbl">Açkı/Sıkma</div><div class="data-val">'+(c.acki==='Evet'?'✅ Evet':'❌ Hayır')+'</div></div>':'')+
+        (c.civi?'<div><div class="data-lbl">Çivi</div><div class="data-val">'+c.civi+'</div></div>':'')+
+        (c.vakum?'<div><div class="data-lbl">Vakum</div><div class="data-val">'+(c.vakum==='Evet'?'💨 Evet':'❌ Hayır')+'</div></div>':'')+
+        (c.vakumDerece?'<div><div class="data-lbl">Derece</div><div class="data-val">'+c.vakumDerece+' °C</div></div>':'')+
+        (c.vakumSure?'<div><div class="data-lbl">Süre</div><div class="data-val">'+c.vakumSure+' dk</div></div>':'')+
+      '</div></div>';
+  }
+  if(c.finisaj){
+    html+='<div class="form-section" style="background:#fdedec;border-color:#f1948a">';
+    html+='<div class="fsec-title" style="color:#c0392b">🎨 Finisaj</div>';
+    if(c.finisajTarih) html+='<div style="font-size:11px;color:var(--text2);margin-bottom:6px">📅 '+fmtDate(c.finisajTarih)+'</div>';
+    html+='<div style="font-size:13px;line-height:1.7;white-space:pre-wrap;color:var(--text);background:#fff;padding:10px;border-radius:8px">'+c.finisaj+'</div>';
+    html+='<div style="margin-top:8px"><button class="btn btn-warn btn-sm" onclick="openFinisaj(\''+c.id+'\')" >✏️ Düzenle</button></div>';
+    html+='</div>';
+  } else {
+    html+='<div style="margin-bottom:12px"><button class="btn btn-success btn-full" onclick="openFinisaj(\''+c.id+'\')">';
+    html+='🎨 Finisaj Bilgisi Ekle</button></div>';
+  }
+  html+='<div class="divider"></div>';
+  html+='<button class="btn btn-warn btn-sm btn-full" style="margin-bottom:8px" onclick="openRetEdit(\''+c.id+'\')">✏️ Düzenle</button>';
+  html+='<button class="btn btn-danger btn-sm btn-full" onclick="deleteRet(\\\''+c.id+'\\\')">🗑️ Kartı Sil</button>';
+  var rPhotos=[];
+  try{rPhotos=c.photos?(typeof c.photos==='string'?JSON.parse(c.photos||'[]'):(Array.isArray(c.photos)?c.photos:[])):[];}catch(e){}
+  html+='<div class="form-section" style="background:#f5f0eb"><div class="fsec-title">📷 Fotoğraflar</div><div class="photo-grid">';
+  rPhotos.forEach(function(p){
+    html+='<div style="position:relative">';
+    html+='<img class="photo-thumb" src="https://drive.google.com/thumbnail?id='+p.id+'&sz=w200" onclick="window.open(\''+p.url+'\')">'; 
+    html+='<div onclick="deletePhoto(\'ret\',\''+c.id+'\',\''+p.id+'\')" style="position:absolute;top:3px;right:3px;background:rgba(192,57,43,0.85);color:#fff;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer">✕</div>';
+    html+='</div>';
+  });
+  html+='<div class="photo-add-btn" onclick="openPhotoCapture(\'ret\',\''+c.id+'\')">+</div></div></div>';
+  document.getElementById('rd-content').innerHTML=html;
+  om('modal-ret-detail');
+}
+// deleteRet moved to window.deleteRet at bottom
+
+// ══════════════════════════════════════════════════════
+// RAPOR
+// ══════════════════════════════════════════════════════
+function renderRapor() {
+  var totalHam=sepiCards.reduce(function(s,c){return s+(c.hamKg||0);},0);
+  var totalSepi=sepiCards.filter(function(c){return c.sepiKg;}).reduce(function(s,c){return s+c.sepiKg;},0);
+  var completed=sepiCards.filter(function(c){return c.status===3;});
+  var totalAdet=completed.reduce(function(s,c){return s+(c.totalAdet||0);},0);
+  var diffs=sepiCards.filter(function(c){return c.sepiKg&&c.hamKg;}).map(function(c){return c.sepiKg-c.hamKg;});
+  var avgDiff=diffs.length?(diffs.reduce(function(a,b){return a+b;},0)/diffs.length).toFixed(1):'—';
+  var avgPct=diffs.length&&totalHam>0?((totalSepi-totalHam)/totalHam*100).toFixed(1):'—';
+  var totalRetAdet=retCards.reduce(function(s,c){return s+(c.adet||0);},0);
+
+  document.getElementById('raporContent').innerHTML=
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">'+
+      '<div class="stat-box"><div class="data-lbl">Sepi Kart</div><div class="data-val big" style="font-size:28px">'+sepiCards.length+'</div></div>'+
+      '<div class="stat-box"><div class="data-lbl">Retenaj Kart</div><div class="data-val big" style="font-size:28px;color:var(--blue)">'+retCards.length+'</div></div>'+
+      '<div class="stat-box"><div class="data-lbl">Toplam Ham Kg</div><div class="data-val big">'+totalHam.toLocaleString('tr-TR')+'</div></div>'+
+      '<div class="stat-box"><div class="data-lbl">Toplam Sepi Kg</div><div class="data-val big" style="color:var(--accent2)">'+totalSepi.toLocaleString('tr-TR')+'</div></div>'+
+      '<div class="stat-box"><div class="data-lbl">Genel Verim</div><div class="data-val big" style="color:'+(parseFloat(avgPct)>=0?'var(--success)':'var(--danger)')+'">'+( avgPct!=='—'?(parseFloat(avgPct)>=0?'+':'')+avgPct:'—')+'%</div></div>'+
+      '<div class="stat-box"><div class="data-lbl">Toplam Ret. Adet</div><div class="data-val big" style="color:var(--blue)">'+totalRetAdet.toLocaleString('tr-TR')+'</div></div>'+
+    '</div>'+
+    '<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px">'+
+      '<div class="fsec-title">🔵 Sepi Durum Dağılımı</div>'+
+      [['1','⏳ Ham Girildi','var(--warn)'],['2','🔵 Sepi Eklendi','var(--accent2)'],['3','✅ Tamamlandı','var(--success)']].map(function(x){
+        var cnt=sepiCards.filter(function(c){return String(c.status)===x[0];}).length;
+        var pct=sepiCards.length?Math.round(cnt/sepiCards.length*100):0;
+        return '<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:12px;font-weight:600">'+x[1]+'</span><span style="font-family:DM Mono,monospace;font-size:11px">'+cnt+' ('+pct+'%)</span></div>'+
+          '<div style="background:var(--surface2);border-radius:4px;height:7px;overflow:hidden"><div style="height:100%;width:'+pct+'%;background:'+x[2]+';border-radius:4px"></div></div></div>';
+      }).join('')+
+    '</div>'+
+    // Yöre özeti
+    (function(){
+      var yoreler={};
+      sepiCards.forEach(function(c){
+        var y=c.mense||'Belirsiz';
+        if(!yoreler[y]) yoreler[y]={ham:0,sepi:0,cnt:0};
+        yoreler[y].ham+=(c.hamKg||0);
+        yoreler[y].sepi+=(c.sepiKg||0);
+        yoreler[y].cnt++;
+      });
+      var rows=Object.keys(yoreler).map(function(y){
+        var d=yoreler[y];
+        var pct=d.ham>0?((d.sepi-d.ham)/d.ham*100).toFixed(1):'—';
+        var col=parseFloat(pct)>=0?'var(--success)':'var(--danger)';
+        return '<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border)">'+
+          '<div><div style="font-weight:600;font-size:13px">'+y+'</div><div style="font-size:11px;color:var(--text2)">'+d.cnt+' kart · Ham: '+d.ham.toFixed(0)+' kg</div></div>'+
+          '<div style="text-align:right"><div style="font-family:DM Mono,monospace;font-size:15px;color:var(--accent)">'+d.sepi.toFixed(0)+' kg</div>'+
+          '<div style="font-size:11px;font-weight:700;color:'+col+'">'+(pct!=='—'?(parseFloat(pct)>=0?'+':'')+pct+'%':'—')+'</div></div></div>';
+      }).join('');
+      return '<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px">'+
+        '<div class="fsec-title">📍 Yöre Bazlı Özet</div>'+
+        (rows||'<div style="color:var(--text2);font-size:13px;text-align:center;padding:16px">Henüz veri yok</div>')+
+      '</div>';
+    })();
+}
+
+function showSub(section, tab) {
+  var allPages;
+  if(section==='sepi') allPages=['sepi-list','sepi-export'];
+  else if(section==='retenaj') allPages=['retenaj-list','retenaj-export'];
+  else allPages=['rapor-genel','rapor-yore','rapor-musteri'];
+  
+  allPages.forEach(function(p){ document.getElementById(p).classList.remove('active'); });
+  document.getElementById(section+'-'+tab).classList.add('active');
+
+  var btns=document.querySelectorAll('#main-'+section+' .sub-tabs button');
+  var tabs;
+  if(section==='sepi') tabs=['list','export'];
+  else if(section==='retenaj') tabs=['list','export'];
+  else tabs=['genel','yore','musteri'];
+  btns.forEach(function(b,i){ b.classList.toggle('active', tabs[i]===tab); });
+
+  if(section==='rapor'&&tab==='yore') initYoreRapor();
+  if(section==='rapor'&&tab==='musteri') initMusteriRapor();
+}
+
+function initYoreRapor() {
+  var yoreler=[...new Set(sepiCards.map(function(c){return c.mense||'Belirsiz';}).filter(Boolean))].sort();
+  var sel=document.getElementById('filter-yore');
+  sel.innerHTML='<option value="">Tümü</option>'+yoreler.map(function(y){return '<option>'+y+'</option>';}).join('');
+  renderYoreRapor();
+}
+
+function renderYoreRapor() {
+  var yore=document.getElementById('filter-yore').value;
+  var cins=document.getElementById('filter-cins').value;
+  var start=document.getElementById('filter-start').value;
+  var end=document.getElementById('filter-end').value;
+
+  var list=sepiCards.filter(function(c){
+    if(yore && (c.mense||'Belirsiz')!==yore) return false;
+    if(cins && c.cins!==cins) return false;
+    if(start && c.date<start) return false;
+    if(end && c.date>end) return false;
+    return true;
+  });
+
+  var el=document.getElementById('yoreRaporContent');
+  if(!list.length){
+    el.innerHTML='<div class="empty"><div class="empty-icon">📍</div><div class="empty-text">Kayıt bulunamadı</div></div>';
+    return;
+  }
+
+  var totalHam=list.reduce(function(s,c){return s+(c.hamKg||0);},0);
+  var totalSepi=list.filter(function(c){return c.sepiKg;}).reduce(function(s,c){return s+c.sepiKg;},0);
+  var totalAdet=list.filter(function(c){return c.totalAdet;}).reduce(function(s,c){return s+(c.totalAdet||0);},0);
+  var verim=totalHam>0&&totalSepi>0?((totalSepi-totalHam)/totalHam*100).toFixed(1):'—';
+  var verimCol=parseFloat(verim)>=0?'var(--success)':'var(--danger)';
+
+  // Kalite dağılımı - sadece kalite girilmiş kartlar
+  var kaliteliKartlar = list.filter(function(c){ return c.status==3 && (c.q1||c.q2||c.q3); });
+  var topQ1=0, topQ2=0, topQ3=0, topAdet=0;
+  kaliteliKartlar.forEach(function(c){
+    topQ1+=(parseInt(c.q1)||0);
+    topQ2+=(parseInt(c.q2)||0);
+    topQ3+=(parseInt(c.q3)||0);
+    topAdet+=(parseInt(c.totalAdet)||0);
+  });
+  var q1Pct = topAdet>0 ? ((topQ1/topAdet)*100).toFixed(1)+'%' : '—';
+  var q2Pct = topAdet>0 ? ((topQ2/topAdet)*100).toFixed(1)+'%' : '—';
+  var q3Pct = topAdet>0 ? ((topQ3/topAdet)*100).toFixed(1)+'%' : '—';
+
+  var html=
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">'+
+      '<div class="stat-box"><div class="data-lbl">Kart Sayısı</div><div class="data-val big">'+list.length+'</div></div>'+
+      '<div class="stat-box"><div class="data-lbl">Toplam Ham Kg</div><div class="data-val big">'+totalHam.toFixed(0)+'</div></div>'+
+      '<div class="stat-box"><div class="data-lbl">Toplam Sepi Kg</div><div class="data-val big" style="color:var(--accent2)">'+totalSepi.toFixed(0)+'</div></div>'+
+      '<div class="stat-box"><div class="data-lbl">Verim</div><div class="data-val big" style="color:'+verimCol+'">'+(verim!=='—'?(parseFloat(verim)>=0?'+':'')+verim+'%':'—')+'</div></div>'+
+    '</div>'+
+    '<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:12px">'+
+      '<div class="fsec-title">⭐ Kalite Dağılımı '+(kaliteliKartlar.length>0?'('+kaliteliKartlar.length+' kart)':'— henüz girilmemiş')+'</div>'+
+      (kaliteliKartlar.length>0?
+        '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center">'+
+          '<div style="background:#d5f5e3;border-radius:8px;padding:10px"><div class="data-lbl" style="color:#1e8449">1. Kalite</div><div class="data-val big" style="color:#1e8449">'+q1Pct+'</div><div style="font-size:11px;color:#1e8449">'+topQ1+' adet</div></div>'+
+          '<div style="background:#fef9c3;border-radius:8px;padding:10px"><div class="data-lbl" style="color:#b7950b">2. Kalite</div><div class="data-val big" style="color:#b7950b">'+q2Pct+'</div><div style="font-size:11px;color:#b7950b">'+topQ2+' adet</div></div>'+
+          '<div style="background:#fadbd8;border-radius:8px;padding:10px"><div class="data-lbl" style="color:#c0392b">3. Kalite</div><div class="data-val big" style="color:#c0392b">'+q3Pct+'</div><div style="font-size:11px;color:#c0392b">'+topQ3+' adet</div></div>'+
+        '</div>'
+      :'<div style="color:var(--text2);font-size:13px;text-align:center;padding:8px">Kalite bilgisi girilmiş kart yok</div>')+
+    '</div>'+
+    '<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden">'+
+    list.sort(function(a,b){return new Date(b.date)-new Date(a.date);}).map(function(c){
+      var diff=c.sepiKg&&c.hamKg?c.sepiKg-c.hamKg:null;
+      var pct=diff!==null&&c.hamKg?(diff/c.hamKg*100).toFixed(1):null;
+      var col=pct!==null?(parseFloat(pct)>=0?'var(--success)':'var(--danger)'):'var(--text2)';
+      return '<div style="padding:11px 13px;border-bottom:1px solid var(--border)">'+
+        '<div style="display:flex;justify-content:space-between;align-items:flex-start">'+
+          '<div><div style="font-family:DM Mono,monospace;font-size:14px;color:var(--accent)">'+c.batchNo+'</div>'+
+          '<div style="font-size:11px;color:var(--text2);margin-top:2px">'+fmtDate(c.date)+' · '+(c.cins||'—')+'</div></div>'+
+          '<div style="text-align:right">'+
+            '<div style="font-family:DM Mono,monospace;font-size:13px">Ham: '+(c.hamKg||'—')+' kg</div>'+
+            (c.sepiKg?'<div style="font-size:11px;font-weight:700;color:'+col+'">'+(parseFloat(pct)>=0?'+':'')+pct+'%</div>':'<div style="font-size:11px;color:var(--text2)">Sepi bekleniyor</div>')+
+          '</div>'+
+        '</div>'+
+      '</div>';
+    }).join('')+
+    '</div>';
+
+  el.innerHTML=html;
+}
+
+function initMusteriRapor() {
+  var musteriler=[...new Set(retCards.map(function(c){return c.musteri||'';}).filter(Boolean))].sort();
+  var sel=document.getElementById('filter-musteri');
+  sel.innerHTML='<option value="">Tümü</option>'+musteriler.map(function(m){return '<option>'+m+'</option>';}).join('');
+  renderMusteriRapor();
+}
+
+function renderMusteriRapor() {
+  var musteri=document.getElementById('filter-musteri').value;
+  var start=document.getElementById('filter-ret-start').value;
+  var end=document.getElementById('filter-ret-end').value;
+
+  var list=retCards.filter(function(c){
+    if(musteri && c.musteri!==musteri) return false;
+    if(start && c.tarih<start) return false;
+    if(end && c.tarih>end) return false;
+    return true;
+  });
+
+  var el=document.getElementById('musteriRaporContent');
+  if(!list.length){
+    el.innerHTML='<div class="empty"><div class="empty-icon">👤</div><div class="empty-text">Kayıt bulunamadı</div></div>';
+    return;
+  }
+
+  var totalAdet=list.reduce(function(s,c){return s+(c.adet||0);},0);
+
+  // Müşteri bazlı gruplama
+  var musteriler={};
+  list.forEach(function(c){
+    var m=c.musteri||'Belirsiz';
+    if(!musteriler[m]) musteriler[m]={adet:0,kartlar:[]};
+    musteriler[m].adet+=(c.adet||0);
+    musteriler[m].kartlar.push(c);
+  });
+
+  var html=
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">'+
+      '<div class="stat-box"><div class="data-lbl">Toplam Sipariş</div><div class="data-val big">'+list.length+'</div></div>'+
+      '<div class="stat-box"><div class="data-lbl">Toplam Adet</div><div class="data-val big" style="color:var(--blue)">'+totalAdet.toLocaleString('tr-TR')+'</div></div>'+
+    '</div>';
+
+  if(!musteri) {
+    // Müşteri listesi özet
+    html+='<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden">';
+    Object.keys(musteriler).sort().forEach(function(m){
+      var d=musteriler[m];
+      html+='<div style="padding:11px 13px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">'+
+        '<div><div style="font-weight:600;font-size:14px">'+m+'</div>'+
+        '<div style="font-size:11px;color:var(--text2)">'+d.kartlar.length+' sipariş</div></div>'+
+        '<div style="font-family:DM Mono,monospace;font-size:18px;color:var(--blue)">'+d.adet+' <span style="font-size:11px;color:var(--text2)">adet</span></div>'+
+      '</div>';
+    });
+    html+='</div>';
+  } else {
+    // Seçili müşterinin siparişleri
+    html+='<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden">';
+    list.sort(function(a,b){return new Date(b.tarih)-new Date(a.tarih);}).forEach(function(c){
+      html+='<div style="padding:11px 13px;border-bottom:1px solid var(--border)">'+
+        '<div style="display:flex;justify-content:space-between;align-items:flex-start">'+
+          '<div><div style="font-family:DM Mono,monospace;font-size:13px;color:var(--blue)">'+c.isEmri+'</div>'+
+          '<div style="font-weight:600;font-size:13px;margin-top:2px">'+c.urun+'</div>'+
+          '<div style="font-size:11px;color:var(--text2)">'+fmtDate(c.tarih)+' · '+( c.renk||'—')+' · '+(c.dolap||'—')+'</div></div>'+
+          '<div style="text-align:right">'+
+            '<div style="font-family:DM Mono,monospace;font-size:20px;color:var(--blue)">'+( c.adet||'—')+'</div>'+
+            '<div style="font-size:10px;color:var(--text2)">adet</div>'+
+          '</div>'+
+        '</div>'+
+      '</div>';
+    });
+    html+='</div>';
+  }
+
+  el.innerHTML=html;
+}
+
+// ══════════════════════════════════════════════════════
+// EXCEL EXPORT
+// ══════════════════════════════════════════════════════
+function exportSepi(list) {
+  list = list || sepiCards;
+  if(!list.length){toast('⚠️ Kayıt yok!');return;}
+  var data=list.map(function(c){
+    return {
+      'BATCH NO':c.batchNo,'TEDARİKÇİ KODU':c.supplierCode,'TEDARİKÇİ ADI':c.supplierName||'',
+      'MENŞEİ':c.mense||'','TARİH':fmtDate(c.date),'HAM KG':c.hamKg||'','CİNS':c.cins||'',
+      'SEPİ KG':c.sepiKg||'',
+      'FARK (KG)':c.sepiKg&&c.hamKg?parseFloat((c.sepiKg-c.hamKg).toFixed(2)):'',
+      'FARK (%)':c.sepiKg&&c.hamKg?parseFloat(((c.sepiKg-c.hamKg)/c.hamKg*100).toFixed(1)):'',
+      '1. KALİTE':c.q1!=null?c.q1:'','2. KALİTE':c.q2!=null?c.q2:'','3. KALİTE':c.q3!=null?c.q3:'',
+      'TOPLAM ADET':c.totalAdet||'','ORT. KG/ADET':c.avgKg||'',
+      'DURUM':{1:'Ham Girildi',2:'Sepi Eklendi',3:'Tamamlandı'}[c.status]
+    };
+  });
+  doExport([{name:'HAM DERİ - SEPİ', data:data}], 'sepi_takip');
+}
+function exportSepiFiltered() {
+  var s=document.getElementById('sepiExpStart').value, e=document.getElementById('sepiExpEnd').value;
+  var list=sepiCards.filter(function(c){ return (!s||c.date>=s)&&(!e||c.date<=e); });
+  if(!list.length){toast('⚠️ Seçili aralıkta kayıt yok!');return;}
+  exportSepi(list);
+}
+
+function exportRet(list) {
+  list = list || retCards;
+  if(!list.length){toast('⚠️ Kayıt yok!');return;}
+  var data=list.map(function(c){
+    return {
+      'İŞ EMRİ NO':c.isEmri,'MÜŞTERİ':c.musteri||'','ÜRÜN':c.urun||'',
+      'ÜRETİM TARİHİ':fmtDate(c.tarih),'RENK':c.renk||'','ADET':c.adet||'',
+      'KALINLIK (MM)':c.kalinlik||'','KALİTE':c.kalite||'',
+      'SEPİ BATCH':c.sepiBatch||'','MENŞEİ':c.sepiMense||'','CİNS':c.sepiCins||'',
+      'TEDARİKÇİ':c.sepiSupplier||''
+    };
+  });
+  doExport([{name:'RETENAJ TAKİP', data:data}], 'retenaj_takip');
+}
+function exportRetFiltered() {
+  var s=document.getElementById('retExpStart').value, e=document.getElementById('retExpEnd').value;
+  var list=retCards.filter(function(c){ return (!s||c.tarih>=s)&&(!e||c.tarih<=e); });
+  if(!list.length){toast('⚠️ Seçili aralıkta kayıt yok!');return;}
+  exportRet(list);
+}
+
+function doExport(sheets, name) {
+  var wb=XLSX.utils.book_new();
+  sheets.forEach(function(s){
+    var ws=XLSX.utils.json_to_sheet(s.data);
+    ws['!cols']=Array(20).fill({wch:16});
+    XLSX.utils.book_append_sheet(wb, ws, s.name);
+  });
+  var d=new Date().toLocaleDateString('tr-TR').replace(/\./g,'-');
+  XLSX.writeFile(wb, name+'_'+d+'.xlsx');
+  toast('📊 Excel indirildi!');
+}
+
+
+// ══════════════════════════════════════════════════════
+// STOK BÖLÜMÜ
+// ══════════════════════════════════════════════════════
+function renderStok() {
+  var el = document.getElementById('stokContent');
+
+  // Sadece tamamlanmış sepi kartları (totalAdet dolu olanlar)
+  var sepiList = sepiCards.filter(function(c){ return c.totalAdet && c.totalAdet > 0; });
+
+  if (!sepiList.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">📦</div><div class="empty-text">Tamamlanmış sepi kaydı yok</div></div>';
+    return;
+  }
+
+  // Her sepi için retenajlarda kullanılan adet toplamı
+  var html = '';
+  var toplamStok = 0;
+  var toplamKullanilan = 0;
+  var toplamUretilen = 0;
+
+  sepiList.sort(function(a,b){ return new Date(b.date)-new Date(a.date); }).forEach(function(c) {
+    var kullanilan = retCards
+      .filter(function(r){ return r.sepiId === c.id; })
+      .reduce(function(s,r){ return s + (parseInt(r.adet)||0); }, 0);
+
+    var stokta = (c.totalAdet || 0) - kullanilan;
+    var pct = c.totalAdet > 0 ? Math.round(kullanilan / c.totalAdet * 100) : 0;
+
+    toplamUretilen += (c.totalAdet || 0);
+    toplamKullanilan += kullanilan;
+    toplamStok += stokta;
+
+    var stokRenk = stokta <= 0 ? 'var(--danger)' : stokta < c.totalAdet * 0.2 ? 'var(--warn)' : 'var(--success)';
+    var stokLabel = stokta <= 0 ? 'TÜKENDİ' : stokta < c.totalAdet * 0.2 ? 'AZALDI' : 'MEVCUT';
+    var stokBadge = stokta <= 0 ? 'badge-danger' : stokta < c.totalAdet * 0.2 ? 'badge-warn' : 'badge-ok';
+
+    // Bu sepiden yapılan retenajlar
+    var retList = retCards.filter(function(r){ return r.sepiId === c.id; });
+
+    html += '<div class="item-card" style="margin-bottom:10px">' +
+      '<div class="item-card-header">' +
+        '<div>' +
+          '<div class="item-code">' + c.batchNo + '</div>' +
+          '<div class="item-sub">' + (c.supplierName||'—') + (c.mense ? ' · ' + c.mense : '') + ' · ' + (c.cins||'—') + '</div>' +
+        '</div>' +
+        '<span class="status-badge ' + (stokta<=0?'s1':stokta<c.totalAdet*0.2?'s-ret':'s2') + '">' + stokLabel + '</span>' +
+      '</div>' +
+      '<div class="item-body">' +
+        '<div class="data-grid">' +
+          '<div><div class="data-lbl">Toplam Üretilen</div><div class="data-val big">' + c.totalAdet + '</div></div>' +
+          '<div><div class="data-lbl">Retenajda Kullanılan</div><div class="data-val big" style="color:var(--blue)">' + kullanilan + '</div></div>' +
+          '<div><div class="data-lbl">Stokta Kalan</div><div class="data-val big" style="color:' + stokRenk + '">' + stokta + '</div></div>' +
+          '<div><div class="data-lbl">Kullanım Oranı</div><div class="data-val big" style="color:var(--accent2)">' + pct + '%</div></div>' +
+        '</div>' +
+        // Kullanım çubuğu
+        '<div style="background:var(--surface2);border-radius:6px;height:8px;overflow:hidden;margin-bottom:10px">' +
+          '<div style="height:100%;width:' + pct + '%;background:var(--blue);border-radius:6px;transition:width 0.5s"></div>' +
+        '</div>' +
+        // Bu sepiden yapılan retenajlar
+        (retList.length > 0 ?
+          '<div style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">🏭 Kullanılan Retenajlar</div>' +
+          retList.map(function(r){
+            return '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 8px;background:var(--surface2);border-radius:6px;margin-bottom:4px">' +
+              '<div><div style="font-family:DM Mono,monospace;font-size:12px;color:var(--blue)">' + r.isEmri + '</div>' +
+              '<div style="font-size:11px;color:var(--text2)">' + (r.musteri||'—') + ' · ' + (r.urun||'—') + '</div></div>' +
+              '<div style="font-family:DM Mono,monospace;font-size:14px;font-weight:500;color:var(--blue)">' + (r.adet||0) + ' adet</div>' +
+            '</div>';
+          }).join('') :
+          '<div style="font-size:12px;color:var(--text2);text-align:center;padding:8px">Henüz retenajda kullanılmadı</div>'
+        ) +
+      '</div>' +
+    '</div>';
+  });
+
+  // Özet kutuları
+  var ozet = '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px">' +
+    '<div class="stat-box"><div class="data-lbl">Toplam Üretilen</div><div class="data-val big" style="font-size:22px">' + toplamUretilen + '</div></div>' +
+    '<div class="stat-box"><div class="data-lbl">Kullanılan</div><div class="data-val big" style="font-size:22px;color:var(--blue)">' + toplamKullanilan + '</div></div>' +
+    '<div class="stat-box"><div class="data-lbl">Stokta</div><div class="data-val big" style="font-size:22px;color:var(--success)">' + toplamStok + '</div></div>' +
+  '</div>';
+
+  el.innerHTML = ozet + html;
+}
+
+// ══ SEPİ TİPİ ══════════════════════════════════════════
+function sepiTipSec(deger, el) {
+  document.getElementById('sn-sepitipi').value = deger;
+  document.querySelectorAll('#st-chrome, #st-fullveg').forEach(function(b){
+    b.classList.remove('mek-evet','mek-diger');
+  });
+  if (deger === 'Chrome') el.classList.add('mek-evet');
+  else el.classList.add('mek-diger');
+}
+
+// ══ MEKANİK ════════════════════════════════════════════
+var _mek = {acki:'', civi:'', vakum:''};
+
+function mekSec(grup, deger, el) {
+  _mek[grup] = deger;
+  el.parentElement.querySelectorAll('.mek-opt').forEach(function(b){
+    b.classList.remove('mek-evet','mek-hayir','mek-diger');
+  });
+  if (deger==='Evet') el.classList.add('mek-evet');
+  else if (deger==='Hayır') el.classList.add('mek-hayir');
+  else el.classList.add('mek-diger');
+}
+
+function resetMekanik() {
+  _mek = {acki:'', civi:'', vakum:''};
+  document.querySelectorAll('.mek-opt').forEach(function(b){
+    b.classList.remove('mek-evet','mek-hayir','mek-diger');
+  });
+  var vd=document.getElementById('vakum-derece');
+  var vs=document.getElementById('vakum-sure');
+  if(vd) vd.value='';
+  if(vs) vs.value='';
+}
+
+function getMekanikData() {
+  return {
+    acki: _mek.acki,
+    civi: _mek.civi,
+    vakum: _mek.vakum,
+    vakumDerece: (document.getElementById('vakum-derece')||{}).value||'',
+    vakumSure:   (document.getElementById('vakum-sure')||{}).value||''
+  };
+}
+
+
+
+
+// ══ SEPİ EDİT ══════════════════════════════════════════
+var _sepiEditId = null;
+
+function sepiEditTipSec(deger, el) {
+  document.getElementById('se-sepitipi').value = deger;
+  document.querySelectorAll('#se-st-chrome,#se-st-fullveg').forEach(function(b){
+    b.classList.remove('mek-evet','mek-diger');
+  });
+  if(deger==='Chrome') el.classList.add('mek-evet');
+  else el.classList.add('mek-diger');
+}
+
+function sepiEditCalcPct() {
+  var q1=parseInt(document.getElementById('se-q1').value)||0;
+  var q2=parseInt(document.getElementById('se-q2').value)||0;
+  var q3=parseInt(document.getElementById('se-q3').value)||0;
+  var tot=q1+q2+q3;
+  if(tot>0){
+    document.getElementById('se-q1p').textContent=((q1/tot)*100).toFixed(0)+'%';
+    document.getElementById('se-q2p').textContent=((q2/tot)*100).toFixed(0)+'%';
+    document.getElementById('se-q3p').textContent=((q3/tot)*100).toFixed(0)+'%';
+    var hamKg=parseFloat(document.getElementById('se-hamkg').value)||0;
+    var avg=hamKg>0?(hamKg/tot).toFixed(2):'—';
+    document.getElementById('se-avg-preview').innerHTML='<div class="data-grid" style="margin-top:8px"><div style="text-align:center"><div class="data-lbl">Toplam Adet</div><div class="data-val big">'+tot+'</div></div><div style="text-align:center"><div class="data-lbl">Ort. kg/adet</div><div class="data-val big">'+avg+'</div></div></div>';
+  } else {
+    ['se-q1p','se-q2p','se-q3p'].forEach(function(id){document.getElementById(id).textContent='—';});
+    document.getElementById('se-avg-preview').innerHTML='';
+  }
+}
+
+function openSepiEdit(id) {
+  _sepiEditId = id;
+  var card = sepiCards.find(function(x){ return x.id===id; });
+
+  // Tedarikçi
+  document.getElementById('se-sup').value = card.supplierName || '';
+  document.getElementById('se-code').value = card.supplierCode || '';
+  document.getElementById('se-batch').value = card.batchNo || '';
+
+  // Ham deri
+  document.getElementById('se-date').value = card.date ? card.date.substring(0,10) : '';
+  document.getElementById('se-hamkg').value = card.hamKg || '';
+  document.getElementById('se-cins').value = card.cins || '';
+  document.getElementById('se-mense').value = card.mense || '';
+  document.getElementById('se-kireckg').value = card.kirecKg || '';
+  document.getElementById('se-kireckalinlik').value = card.kirecKalinlik || '';
+
+  // Sepi tipi
+  document.getElementById('se-sepitipi').value = card.sepiTipi || '';
+  document.querySelectorAll('#se-st-chrome,#se-st-fullveg').forEach(function(b){
+    b.classList.remove('mek-evet','mek-diger');
+  });
+  if(card.sepiTipi==='Chrome') document.getElementById('se-st-chrome').classList.add('mek-evet');
+  else if(card.sepiTipi==='Full-Veg') document.getElementById('se-st-fullveg').classList.add('mek-diger');
+
+  // Sepi kg
+  document.getElementById('se-sepikg').value = card.sepiKg || '';
+  document.getElementById('se-sepi-section').style.display = card.status>=2 ? 'block' : 'none';
+
+  // Kalite
+  document.getElementById('se-q1').value = card.q1 || '';
+  document.getElementById('se-q2').value = card.q2 || '';
+  document.getElementById('se-q3').value = card.q3 || '';
+  document.getElementById('se-kalite-section').style.display = card.status>=3 ? 'block' : 'none';
+  sepiEditCalcPct();
+
+  // Batch kodu güncelle
+  document.getElementById('se-code').oninput = function() {
+    var code = this.value;
+    var date = document.getElementById('se-date').value;
+    if(code && date) document.getElementById('se-batch').value = genBatch(code, date);
+  };
+  document.getElementById('se-date').onchange = function() {
+    var code = document.getElementById('se-code').value;
+    var date = this.value;
+    if(code && date) document.getElementById('se-batch').value = genBatch(code, date);
+  };
+  document.getElementById('se-q1').oninput = sepiEditCalcPct;
+  document.getElementById('se-q2').oninput = sepiEditCalcPct;
+  document.getElementById('se-q3').oninput = sepiEditCalcPct;
+
+  cm('modal-sepi-detail');
+  om('modal-sepi-edit');
+}
+
+async function saveSepiEdit() {
+  var name = document.getElementById('se-sup').value.trim();
+  var code = parseInt(document.getElementById('se-code').value);
+  var date = document.getElementById('se-date').value;
+  var hamKg = parseFloat(document.getElementById('se-hamkg').value);
+
+  if(!name){ toast('⚠️ Tedarikçi adı zorunlu!'); return; }
+  if(!code||code<1||code>9){ toast('⚠️ Tedarikçi kodu 1-9 olmalı!'); return; }
+  if(!date){ toast('⚠️ Tarih zorunlu!'); return; }
+  if(!hamKg||hamKg<=0){ toast('⚠️ Ham ağırlık zorunlu!'); return; }
+
+  var idx = sepiCards.findIndex(function(x){ return x.id===_sepiEditId; });
+  var card = sepiCards[idx];
+
+  card.supplierName = name;
+  card.supplierCode = code;
+  card.batchNo = genBatch(code, date);
+  card.date = date;
+  card.hamKg = hamKg;
+  card.cins = document.getElementById('se-cins').value;
+  card.mense = document.getElementById('se-mense').value.trim();
+  card.sepiTipi = document.getElementById('se-sepitipi').value;
+  card.kirecKg = parseFloat(document.getElementById('se-kireckg').value)||0;
+  card.kirecKalinlik = document.getElementById('se-kireckalinlik').value.trim();
+
+  // Sepi kg (sadece status>=2 ise)
+  if(card.status>=2){
+    var sepiKg = parseFloat(document.getElementById('se-sepikg').value)||0;
+    card.sepiKg = sepiKg;
+    card.farkKg = parseFloat((sepiKg - hamKg).toFixed(2));
+    card.farkPct = parseFloat(((sepiKg-hamKg)/hamKg*100).toFixed(1));
+  }
+
+  // Kalite (sadece status>=3 ise)
+  if(card.status>=3){
+    var q1=parseInt(document.getElementById('se-q1').value)||0;
+    var q2=parseInt(document.getElementById('se-q2').value)||0;
+    var q3=parseInt(document.getElementById('se-q3').value)||0;
+    card.q1=q1; card.q2=q2; card.q3=q3;
+    card.totalAdet=q1+q2+q3;
+    card.avgKg=card.totalAdet>0?parseFloat((hamKg/card.totalAdet).toFixed(2)):0;
+  }
+
+  sepiCards[idx] = card;
+
+  // Bağlı retenaj kartlarını güncelle
+  var updated = 0;
+  retCards.forEach(function(ret, ri) {
+    if (ret.sepiId === card.id) {
+      retCards[ri].sepiBatch    = card.batchNo;
+      retCards[ri].sepiMense    = card.mense;
+      retCards[ri].sepiCins     = card.cins;
+      retCards[ri].sepiSupplier = card.supplierName;
+      updated++;
+    }
+  });
+
+  showLoading('Kaydediliyor...');
+  await saveSepi();
+  if (updated > 0) await saveRet();
+  hideLoading();
+  cm('modal-sepi-edit');
+  renderSepi();
+  if (updated > 0) toast('✅ Sepi güncellendi! ' + updated + ' retenaj kartı da güncellendi.');
+  else toast('✅ Sepi kartı güncellendi!');
+}
+
+// ══ RETENAJ EDİT ══════════════════════════════════════
+var _retEditId = null;
+
+function openRetEdit(id) {
+  _retEditId = id;
+  var card = retCards.find(function(x){ return x.id===id; });
+  
+  // Alanları doldur
+  document.getElementById('re-isemri').value = card.isEmri || '';
+  document.getElementById('re-tarih').value = card.tarih ? card.tarih.substring(0,10) : '';
+  document.getElementById('re-renk').value = card.renk || '';
+  document.getElementById('re-adet').value = card.adet || '';
+  document.getElementById('re-kg').value = card.kg || '';
+  document.getElementById('re-kalinlik').value = card.kalinlik || '';
+  document.getElementById('re-kalite').value = card.kalite || '';
+  document.getElementById('re-dolap').value = card.dolap || '';
+
+  // Müşteri ve ürün dropdown doldur
+  var mSel = document.getElementById('re-musteri');
+  mSel.innerHTML = '<option value="">-- Seçin --</option>';
+  _musteriler.forEach(function(m){
+    var opt = document.createElement('option');
+    opt.value = m; opt.textContent = m;
+    if(m === card.musteri) opt.selected = true;
+    mSel.appendChild(opt);
+  });
+  // Listede yoksa ekle
+  if(card.musteri && !_musteriler.includes(card.musteri)){
+    var opt = document.createElement('option');
+    opt.value = card.musteri; opt.textContent = card.musteri; opt.selected = true;
+    mSel.appendChild(opt);
+  }
+
+  var uSel = document.getElementById('re-urun');
+  uSel.innerHTML = '<option value="">-- Seçin --</option>';
+  _urunler.forEach(function(u){
+    var opt = document.createElement('option');
+    opt.value = u; opt.textContent = u;
+    if(u === card.urun) opt.selected = true;
+    uSel.appendChild(opt);
+  });
+  if(card.urun && !_urunler.includes(card.urun)){
+    var opt = document.createElement('option');
+    opt.value = card.urun; opt.textContent = card.urun; opt.selected = true;
+    uSel.appendChild(opt);
+  }
+
+  cm('modal-ret-detail');
+  om('modal-ret-edit');
+}
+
+async function saveRetEdit() {
+  var musteri = document.getElementById('re-musteri').value;
+  var urun = document.getElementById('re-urun').value;
+  var tarih = document.getElementById('re-tarih').value;
+  
+  if(!musteri){ toast('⚠️ Müşteri zorunlu!'); return; }
+  if(!urun){ toast('⚠️ Ürün zorunlu!'); return; }
+  if(!tarih){ toast('⚠️ Tarih zorunlu!'); return; }
+
+  var idx = retCards.findIndex(function(x){ return x.id===_retEditId; });
+  retCards[idx].musteri   = musteri;
+  retCards[idx].urun      = urun;
+  retCards[idx].tarih     = tarih;
+  retCards[idx].renk      = document.getElementById('re-renk').value;
+  retCards[idx].adet      = parseInt(document.getElementById('re-adet').value)||0;
+  retCards[idx].kg        = parseFloat(document.getElementById('re-kg').value)||0;
+  retCards[idx].kalinlik  = document.getElementById('re-kalinlik').value;
+  retCards[idx].kalite    = document.getElementById('re-kalite').value;
+  retCards[idx].dolap     = document.getElementById('re-dolap').value;
+
+  showLoading('Kaydediliyor...');
+  await saveRet();
+  hideLoading();
+  cm('modal-ret-edit');
+  renderRet();
+  toast('✅ Kart güncellendi!');
+}
+
+// ══ FİNİSAJ ════════════════════════════════════════════
+var _finisajId = null;
+
+function openFinisaj(id) {
+  _finisajId = id;
+  var card = retCards.find(function(x){ return x.id===id; });
+  document.getElementById('fin-not').value = card.finisaj || '';
+  document.getElementById('fin-tarih').value = card.finisajTarih || todayStr();
+  document.getElementById('fin-kart-bilgi').innerHTML =
+    '<div class="info-row" style="margin-bottom:12px"><strong>'+card.isEmri+'</strong> · '+card.musteri+' · '+card.urun+'</div>';
+  cm('modal-ret-detail');
+  om('modal-finisaj');
+}
+
+async function saveFinisaj() {
+  var not = document.getElementById('fin-not').value.trim();
+  if(!not){ toast('⚠️ Finisaj notu boş olamaz!'); return; }
+  var tarih = document.getElementById('fin-tarih').value;
+  var idx = retCards.findIndex(function(x){ return x.id===_finisajId; });
+  retCards[idx].finisaj = not;
+  retCards[idx].finisajTarih = tarih || todayStr();
+  showLoading('Kaydediliyor...');
+  await saveRet();
+  hideLoading();
+  cm('modal-finisaj');
+  renderRet();
+  toast('✅ Finisaj kaydedildi!');
+}
+
+
+// ══ LİSTE YÖNETİMİ ════════════════════════════════════
+var _musteriler = [];
+var _urunler = [];
+
+async function loadLists() {
+  try {
+    var res = await fetch(API_URL + '?action=getLists');
+    var json = await res.json();
+    if (json.ok) {
+      _musteriler = json.musteriler || [];
+      _urunler = json.urunler || [];
+      _tedarikciler = (json.tedarikciler || []).sort(function(a,b){ return a.kod - b.kod; });
+    }
+  } catch(e) {
+    console.log('Liste yüklenemedi:', e);
+  }
+  fillDropdown('rn-musteri', _musteriler);
+  fillDropdown('rn-urun', _urunler);
+  fillTedarikciDropdown();
+}
+
+function fillDropdown(id, items) {
+  var sel = document.getElementById(id);
+  if (!sel) return;
+  var current = sel.value;
+  sel.innerHTML = '<option value="">-- Seçin --</option>';
+  items.forEach(function(item) {
+    var opt = document.createElement('option');
+    opt.value = item;
+    opt.textContent = item;
+    if (item === current) opt.selected = true;
+    sel.appendChild(opt);
+  });
+}
+
+function showAddNew(type) {
+  document.getElementById('rn-'+type+'-new').style.display = 'block';
+  document.getElementById('rn-'+type+'-text').focus();
+}
+
+function hideAddNew(type) {
+  document.getElementById('rn-'+type+'-new').style.display = 'none';
+  document.getElementById('rn-'+type+'-text').value = '';
+}
+
+async function addNewItem(type) {
+  var val = document.getElementById('rn-'+type+'-text').value.trim();
+  if (!val) { toast('⚠️ Ad boş olamaz!'); return; }
+  var action = type === 'musteri' ? 'addMusteri' : 'addUrun';
+  try {
+    showLoading('Kaydediliyor...');
+    await fetch(API_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: action, name: val })
+    });
+    hideLoading();
+    if (type === 'musteri') {
+      _musteriler.push(val);
+      _musteriler.sort();
+      fillDropdown('rn-musteri', _musteriler);
+      document.getElementById('rn-musteri').value = val;
+    } else {
+      _urunler.push(val);
+      _urunler.sort();
+      fillDropdown('rn-urun', _urunler);
+      document.getElementById('rn-urun').value = val;
+    }
+    hideAddNew(type);
+    toast('✅ ' + val + ' eklendi!');
+  } catch(e) {
+    hideLoading();
+    toast('⚠️ Kayıt hatası!');
+  }
+}
+
+
+// ══ TEDARİKÇİ YÖNETİMİ ════════════════════════════════
+var _tedarikciler = [];
+
+function fillTedarikciDropdown() {
+  var sel = document.getElementById('sn-sup-select');
+  if (!sel) return;
+  var current = sel.value;
+  sel.innerHTML = '<option value="">-- Tedarikçi Seçin --</option>';
+  _tedarikciler.forEach(function(t) {
+    var opt = document.createElement('option');
+    opt.value = JSON.stringify(t);
+    opt.textContent = t.kod + ' — ' + t.ad;
+    if (current && JSON.parse(current||'{}').kod == t.kod) opt.selected = true;
+    sel.appendChild(opt);
+  });
+  // Sample seçeneği
+  var sampleOpt = document.createElement('option');
+  sampleOpt.value = JSON.stringify({kod:'0', ad:'Sample'});
+  sampleOpt.textContent = '0 — Sample';
+  sel.appendChild(sampleOpt);
+}
+
+function onTedarikciSelect() {
+  var sel = document.getElementById('sn-sup-select');
+  if (!sel.value) {
+    document.getElementById('sn-code').value = '';
+    document.getElementById('sn-sup').value = '';
+    document.getElementById('sn-batch').value = '';
+    document.getElementById('sn-sample-wrap').style.display = 'none';
+    return;
+  }
+  var t = JSON.parse(sel.value);
+  document.getElementById('sn-code').value = t.kod;
+  document.getElementById('sn-sup').value = t.ad;
+  // Sample seçildiyse açıklama alanı göster
+  if (t.kod == '0') {
+    document.getElementById('sn-sample-wrap').style.display = 'block';
+  } else {
+    document.getElementById('sn-sample-wrap').style.display = 'none';
+    document.getElementById('sn-sample-aciklama').value = '';
+  }
+  updateBatch();
+}
+
+function showAddTedarikci() {
+  document.getElementById('sn-sup-new').style.display = 'block';
+}
+function hideAddTedarikci() {
+  document.getElementById('sn-sup-new').style.display = 'none';
+  document.getElementById('sn-new-code').value = '';
+  document.getElementById('sn-new-name').value = '';
+}
+
+async function saveNewTedarikci() {
+  var code = document.getElementById('sn-new-code').value;
+  var name = document.getElementById('sn-new-name').value.trim();
+  if (!code || !name) { toast('⚠️ Kod ve ad zorunlu!'); return; }
+  if (parseInt(code) < 0 || parseInt(code) > 9) { toast('⚠️ Kod 0-9 arası olmalı!'); return; }
+  // Kod 0 sample için rezerve
+  if (code == '0') { toast('⚠️ 0 kodu Sample için rezerve!'); return; }
+  // Mevcut kodla çakışma kontrolü
+  var existing = _tedarikciler.find(function(t){ return String(t.kod) === String(code); });
+  if (existing) { toast('⚠️ Bu kod zaten kullanımda: ' + existing.ad); return; }
+  showLoading('Kaydediliyor...');
+  try {
+    await fetch(API_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'addTedarikci', name: name, code: parseInt(code) })
+    });
+    _tedarikciler.push({ kod: parseInt(code), ad: name });
+    _tedarikciler.sort(function(a,b){ return a.kod - b.kod; });
+    fillTedarikciDropdown();
+    hideAddTedarikci();
+    hideLoading();
+    toast('✅ ' + code + ' — ' + name + ' eklendi!');
+  } catch(e) {
+    hideLoading();
+    toast('⚠️ Kayıt hatası!');
+  }
+}
+
+// ══ FOTOĞRAF ════════════════════════════════════════════
+var _photoType = null;
+var _photoId = null;
+
+function openPhotoCapture(type, id) {
+  _photoType = type;
+  _photoId = id;
+  document.getElementById('photoInput').click();
+}
+
+async function handlePhotoSelected(input) {
+  if (!input.files || !input.files[0]) return;
+  var file = input.files[0];
+  input.value = '';
+  showLoading('Fotoğraf yükleniyor...');
+  try {
+    var base64 = await new Promise(function(res, rej) {
+      var r = new FileReader();
+      r.onload = function(e){ res(e.target.result.split(',')[1]); };
+      r.onerror = rej;
+      r.readAsDataURL(file);
+    });
+    var fn = (_photoType==='sepi'?'SEP':'RET')+'_'+_photoId+'_'+Date.now()+'.'+file.name.split('.').pop();
+    var resp = await fetch(API_URL, {
+      method:'POST',
+      body:JSON.stringify({action:'uploadPhoto',base64:base64,filename:fn,mimeType:file.type})
+    });
+    var json = await resp.json();
+    if(!json.ok) throw new Error(json.error||'Hata');
+    if(_photoType==='sepi'){
+      var i=sepiCards.findIndex(function(x){return x.id===_photoId;});
+      var ph=[];try{ph=sepiCards[i].photos?(typeof sepiCards[i].photos==='string'?JSON.parse(sepiCards[i].photos||'[]'):sepiCards[i].photos):[];}catch(e){}
+      ph.push({id:json.id,url:json.url});
+      sepiCards[i].photos=JSON.stringify(ph);
+      await saveSepi();
+      hideLoading(); cm('modal-sepi-detail'); openSepiDetail(_photoId);
+    } else {
+      var i=retCards.findIndex(function(x){return x.id===_photoId;});
+      var ph=[];try{ph=retCards[i].photos?(typeof retCards[i].photos==='string'?JSON.parse(retCards[i].photos||'[]'):retCards[i].photos):[];}catch(e){}
+      ph.push({id:json.id,url:json.url});
+      retCards[i].photos=JSON.stringify(ph);
+      await saveRet();
+      hideLoading(); cm('modal-ret-detail'); openRetDetail(_photoId);
+    }
+    toast('✅ Fotoğraf kaydedildi!');
+  } catch(e) {
+    hideLoading();
+    toast('⚠️ Yüklenemedi: '+e.message);
+  }
+}
+
+function deletePhoto(type, cardId, photoId) {
+  if(!confirm('Bu fotoğrafı kaldırmak istediğinize emin misiniz?')) return;
+  if(type==='sepi'){
+    var i=sepiCards.findIndex(function(x){return x.id===cardId;});
+    var ph=[];try{ph=sepiCards[i].photos?(typeof sepiCards[i].photos==='string'?JSON.parse(sepiCards[i].photos||'[]'):sepiCards[i].photos):[];}catch(e){}
+    ph=ph.filter(function(p){return p.id!==photoId;});
+    sepiCards[i].photos=JSON.stringify(ph);
+    saveSepi(); cm('modal-sepi-detail'); openSepiDetail(cardId);
+  } else {
+    var i=retCards.findIndex(function(x){return x.id===cardId;});
+    var ph=[];try{ph=retCards[i].photos?(typeof retCards[i].photos==='string'?JSON.parse(retCards[i].photos||'[]'):retCards[i].photos):[];}catch(e){}
+    ph=ph.filter(function(p){return p.id!==photoId;});
+    retCards[i].photos=JSON.stringify(ph);
+    saveRet(); cm('modal-ret-detail'); openRetDetail(cardId);
+  }
+  toast('🗑️ Fotoğraf kaldırıldı!');
+}
+
+// ══ INIT ══════════════════════════════════════════════
+window.deleteSepi = async function(id) {
+  if(!confirm('Bu kartı silmek istediğinize emin misiniz?')) return;
+  sepiCards = sepiCards.filter(function(c){ return c.id !== id; });
+  showLoading('Siliniyor...');
+  await saveSepi();
+  hideLoading();
+  cm('modal-sepi-detail'); renderSepi(); toast('🗑️ Kart silindi');
+};
+window.deleteRet = async function(id) {
+  if(!confirm('Bu kartı silmek istediğinize emin misiniz?')) return;
+  retCards = retCards.filter(function(c){ return c.id !== id; });
+  showLoading('Siliniyor...');
+  await saveRet();
+  hideLoading();
+  cm('modal-ret-detail'); renderRet(); toast('🗑️ Kart silindi');
+};
+
+// İlk yükleme
+async function initApp() {
+  showLoading('Veriler yükleniyor...');
+  try {
+    sepiCards = await apiGet('SEPİ');
+    retCards  = await apiGet('RETENAJ');
+    await loadLists();
+  } catch(e) {
+    toast('⚠️ Bağlantı hatası, offline mod');
+  }
+  hideLoading();
+  renderSepi();
+}
+initApp();
+</script>
+</body>
+</html>
